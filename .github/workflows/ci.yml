@@ -59,7 +59,7 @@ jobs:
       - name: Build and test changed modules
         run: |
           CHANGED_FILES="${{ steps.changed-files.outputs.all_changed_files }}"
-          MODULES=("auth" "game" "ticket" "gateway" "waiting")
+          MODULES=("auth" "game" "ticket" "gateway" "waiting" "auction")
           
           # 공통 코드 변경 시 모든 모듈 빌드
           build_all_modules() {
