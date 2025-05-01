@@ -1,4 +1,5 @@
 rootProject.name = 'multi-test'
+include ':module-eureka'
 include ':module-common'
 include ':module-ticket'
 include ':module-auth'

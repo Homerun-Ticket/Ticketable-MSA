@@ -1,0 +1,229 @@
+name: CD
+
+on:
+  pull_request:
+    branches: ["main"]
+    types: [closed]
+
+jobs:
+  deploy:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:latest
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v46
+        with:
+          files: |
+            module-*/**
+            build.gradle
+            settings.gradle
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'corretto'
+
+      - name: Gradle dependencies caching
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Initialize Gradle to make cache directories
+        run: ./gradlew projects
+
+      - name: Build Changed Modules
+        run: |
+          CHANGED_FILES="${{ steps.changed-files.outputs.all_changed_files }}"
+          MODULES=("eureka" "auth" "game" "ticket" "gateway" "waiting" "auction" "waiting" "point")
+
+          build_all_modules() {
+            echo "Common files changed, building all modules..."
+            ./gradlew build -x test
+          }
+
+          build_module() {
+            local module=$1
+            echo "Building module-$module..."
+            ./gradlew :module-$module:build -x test
+          }
+
+          if echo "$CHANGED_FILES" | grep -q "module-common/\|build.gradle\|settings.gradle"; then
+            build_all_modules
+          else
+            for MODULE in "${MODULES[@]}"; do
+              if echo "$CHANGED_FILES" | grep -q "module-$MODULE/"; then
+                build_module "$MODULE"
+              fi
+            done
+          fi
+
+      - name: Docker caching
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ hashFiles('module-*/**/Dockerfile', 'module-*/**/build.gradle') }}
+          restore-keys: ${{ runner.os }}-buildx-
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to AWS ECR
+        id: login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and Push Docker Images
+        env:
+          AWS_REGISTRY: ${{ secrets.AWS_REGISTRY }}
+        run: |
+          CHANGED_FILES="${{ steps.changed-files.outputs.all_changed_files }}"
+          MODULES=("eureka" "auth" "game" "ticket" "gateway" "waiting" "auction" "waiting" "point")
+          SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-8)
+          docker buildx create --use
+
+          push_all_modules() {
+            for MODULE in "${MODULES[@]}"; do
+              echo "Building and pushing $MODULE image..."
+              docker buildx build \
+                --cache-from type=local,src=/tmp/.buildx-cache \
+                --cache-to type=local,dest=/tmp/.buildx-cache \
+                -t $AWS_REGISTRY/repo-$MODULE:prod-$SHORT_SHA \
+                --push $MODULE
+            done
+          }
+
+          push_module() {
+            local module=$1
+            echo "Building and pushing $module image..."
+            docker buildx build \
+              --cache-from type=local,src=/tmp/.buildx-cache \
+              --cache-to type=local,dest=/tmp/.buildx-cache \
+              -t $AWS_REGISTRY/repo-$module:prod-$SHORT_SHA \
+              --push $module
+          }
+
+          if echo "$CHANGED_FILES" | grep -q "module-common/\|build.gradle\|settings.gradle"; then
+            push_all_modules
+          else
+            for MODULE in "${MODULES[@]}"; do
+              if echo "$CHANGED_FILES" | grep -q "$MODULE/"; then
+                push_module "$MODULE"
+              fi
+            done
+          fi
+
+      - name: Deploy to EC2
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
+          EC2_KEY: ${{ secrets.EC2_KEY }}
+        run: |
+          CHANGED_FILES="${{ steps.changed-files.outputs.all_changed_files }}"
+          MODULES=("eureka" "auth" "game" "ticket" "gateway" "waiting" "auction" "waiting" "point")
+          SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-8)
+
+          ssh -i <(echo "$EC2_KEY") $EC2_USER@$EC2_HOST << 'EOF'
+            # 도커 설치
+            if ! command -v docker &> /dev/null; then
+              curl -fsSL https://get.docker.com | sh
+            fi
+            # Redis 도커로 실행
+            docker rm -f redis || true
+            docker run -d --name redis -p 6379:6379 redis:latest
+            # 도커 로그인
+            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_REGISTRY }}
+          EOF
+
+          # Eureka 서버 배포
+          ssh -i <(echo "$EC2_KEY") $EC2_USER@$EC2_HOST << 'EOF'
+            docker rm -f module-eureka || true
+            docker pull ${{ secrets.AWS_REGISTRY }}/repo-module-eureka:prod-$SHORT_SHA
+            docker run -d --name module-eureka -p 8761:8761 ${{ secrets.AWS_REGISTRY }}/repo-module-eureka:prod-$SHORT_SHA
+          EOF
+
+          sleep 10 # Eureka 서버 시작 대기
+
+          deploy_all_modules() {
+            for MODULE in "${MODULES[@]}"; do
+              echo "Deploying module-$MODULE to EC2..."
+              local port
+              case $MODULE in
+                "gateway") port=8080 ;;
+                "auth") port=8081 ;;
+                "ticket") port=8082 ;;
+                "game") port=8083 ;;
+                "waiting") port=8084 ;;
+                "auction") port=8085 ;;
+                *) port=8080 ;;
+              esac
+              ssh -i <(echo "$EC2_KEY") $EC2_USER@$EC2_HOST << EOF
+                docker rm -f module-$MODULE || true
+                docker pull ${{ secrets.AWS_REGISTRY }}/repo-$MODULE:prod-$SHORT_SHA
+                docker run -d --name module-$MODULE -p $port:8080 ${{ secrets.AWS_REGISTRY }}/repo-$MODULE:prod-$SHORT_SHA
+              EOF
+            done
+          }
+
+          deploy_module() {
+            local module=$1
+            echo "Deploying module-$module to EC2..."
+            local port
+            case $module in
+              "gateway") port=8080 ;;
+              "game") port=8081 ;;
+              "ticket") port=8082 ;;
+              "auth") port=8083 ;;
+              "auction") port=8084 ;;
+              "waiting") port=8085 ;;
+              "point") port=8086 ;;
+              *) port=8080 ;;
+            esac
+            ssh -i <(echo "$EC2_KEY") $EC2_USER@$EC2_HOST << EOF
+              docker rm -f module-$module || true
+              docker pull ${{ secrets.AWS_REGISTRY }}/repo-$module:prod-$SHORT_SHA
+              docker run -d --name module-$module -p $port:8080 ${{ secrets.AWS_REGISTRY }}/repo-$module:prod-$SHORT_SHA
+            EOF
+          }
+
+          if echo "$CHANGED_FILES" | grep -q "module-common/\|build.gradle\|settings.gradle"; then
+            deploy_all_modules
+          else
+            for MODULE in "${MODULES[@]}"; do
+              if echo "$CHANGED_FILES" | grep -q "module-$MODULE/"; then
+                deploy_module "$MODULE"
+              fi
+            done
+          fi
+
+      - name: Test Deployment
+        run: |
+          sleep 30 # 애플리케이션이 시작될 때까지 대기
+          curl http://${{ secrets.EC2_HOST }}:8080/auth
