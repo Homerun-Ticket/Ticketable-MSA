@@ -4,6 +4,7 @@ COPY ../gradle/ /app/gradle/
 COPY ../gradlew /app/
 COPY ../build.gradle /app/
 COPY ../settings.gradle /app/
+COPY module-common/ /app/module-common/
 COPY module-ticket/ /app/module-ticket/
 RUN ./gradlew :module-ticket:build -x test
 

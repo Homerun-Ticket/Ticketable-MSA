@@ -4,6 +4,7 @@ COPY ../gradle/ /app/gradle/
 COPY ../gradlew /app/
 COPY ../build.gradle /app/
 COPY ../settings.gradle /app/
+COPY module-common/ /app/module-common/
 COPY module-game/ /app/module-game/
 RUN ./gradlew :module-game:build -x test
 
