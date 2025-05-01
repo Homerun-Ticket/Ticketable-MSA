@@ -177,11 +177,12 @@ jobs:
               local port
               case $MODULE in
                 "gateway") port=8080 ;;
-                "auth") port=8081 ;;
+                "game") port=8081 ;;
                 "ticket") port=8082 ;;
-                "game") port=8083 ;;
-                "waiting") port=8084 ;;
-                "auction") port=8085 ;;
+                "auth") port=8083 ;;
+                "auction") port=8084 ;;
+                "waiting") port=8085 ;;
+                "point") port=8086 ;;
                 *) port=8080 ;;
               esac
               ssh -i <(echo "$EC2_KEY") $EC2_USER@$EC2_HOST << EOF
