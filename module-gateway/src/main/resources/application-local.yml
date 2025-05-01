@@ -8,7 +8,7 @@ spring:
     gateway:
       routes:
         - id: module-game
-          uri: http://localhost:8081
+          uri: lb://module-game
           predicates:
             - Path=/api/v*/games/**, /api/v*/seats/**, /api/v*/sections/**, /api/v*/stadiums/**
           filters:
@@ -17,7 +17,7 @@ spring:
 
 
         - id: module-ticket
-          uri: http://localhost:8082
+          uri: lb://module-ticket
           predicates:
             - Path=/api/v*/tickets/**, /api/v*/reservations/**, /api/v*/waiting-queue/**
           filters:
@@ -26,7 +26,7 @@ spring:
 
 
         - id: auth-login
-          uri: http://localhost:8083
+          uri: lb://module-login
           predicates:
             - Path=/api/v*/auth/login
           filters:
@@ -38,13 +38,13 @@ spring:
 
 
         - id: auth-signup
-          uri: http://localhost:8083
+          uri: lb://module-auth
           predicates:
             - Path=/api/v*/auth/signup
 
 
         - id: auth-member
-          uri: http://localhost:8083
+          uri: lb://module-member
           predicates:
             - Path=/api/v*/members/**
           filters:
@@ -53,7 +53,7 @@ spring:
 
 
         - id: module-auction
-          uri: http://localhost:8084
+          uri: lb://module-auction
           predicates:
             - Path=/api/v*/auctions/**
           filters:
@@ -61,12 +61,8 @@ spring:
             - RewritePath=/module-auction/(?<segment>.*), /${segment}
 
 
-#        - id: module-waiting
-#          uri: http://localhost:8085
-
-
         - id: module-point
-          uri: http://localhost:8086
+          uri: lb://module-point
           predicates:
             - Path=/api/v*/members/**
           filters:
@@ -75,7 +71,7 @@ spring:
 
 
         - id: admin-game
-          uri: http://localhost:8081
+          uri: lb://module-game
           predicates:
             - Path=/api/v*/admin/**
           filters:
@@ -86,7 +82,7 @@ spring:
 
 
         - id: exchange-point
-          uri: http://localhost:8086
+          uri: lb://module-point
           predicates:
             - Path=/api/v*/admin/**
           filters:
