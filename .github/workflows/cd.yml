@@ -1,0 +1,212 @@
+name: CD
+
+on:
+  pull_request:
+    branches: ["main"]
+    types: [closed]
+
+jobs:
+  deploy:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:latest
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v46
+        with:
+          files: |
+            module-*/**
+            build.gradle
+            settings.gradle
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'corretto'
+
+      - name: Gradle dependencies caching
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Initialize Gradle to make cache directories
+        run: ./gradlew projects
+
+      - name: Build Changed Modules
+        run: |
+          CHANGED_FILES="${{ steps.changed-files.outputs.all_changed_files }}"
+          MODULES=("auth" "game" "ticket" "gateway" "waiting" "auction")
+
+          build_all_modules() {
+            echo "Common files changed, building all modules..."
+            ./gradlew build -x test
+          }
+
+          build_module() {
+            local module=$1
+            echo "Building module-$module..."
+            ./gradlew :module-$module:build -x test
+          }
+
+          if echo "$CHANGED_FILES" | grep -q "module-common/\|build.gradle\|settings.gradle"; then
+            build_all_modules
+          else
+            for MODULE in "${MODULES[@]}"; do
+              if echo "$CHANGED_FILES" | grep -q "module-$MODULE/"; then
+                build_module "$MODULE"
+              fi
+            done
+          fi
+
+      - name: Docker caching
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ hashFiles('module-*/**/Dockerfile', 'module-*/**/build.gradle') }}
+          restore-keys: ${{ runner.os }}-buildx-
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to AWS ECR
+        id: login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and Push Docker Images
+        env:
+          AWS_REGISTRY: ${{ secrets.AWS_REGISTRY }}
+        run: |
+          CHANGED_FILES="${{ steps.changed-files.outputs.all_changed_files }}"
+          MODULES=("auth" "game" "ticket" "gateway" "waiting" "auction")
+          SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-8)
+          docker buildx create --use
+
+          push_all_modules() {
+            for MODULE in "${MODULES[@]}"; do
+              echo "Building and pushing module-$MODULE image..."
+              docker buildx build \
+                --cache-from type=local,src=/tmp/.buildx-cache \
+                --cache-to type=local,dest=/tmp/.buildx-cache \
+                -t $AWS_REGISTRY/repo-$MODULE:prod-$SHORT_SHA \
+                --push module-$MODULE
+            done
+          }
+
+          push_module() {
+            local module=$1
+            echo "Building and pushing module-$module image..."
+            docker buildx build \
+              --cache-from type=local,src=/tmp/.buildx-cache \
+              --cache-to type=local,dest=/tmp/.buildx-cache \
+              -t $AWS_REGISTRY/repo-$module:prod-$SHORT_SHA \
+              --push module-$module
+          }
+
+          if echo "$CHANGED_FILES" | grep -q "module-common/\|build.gradle\|settings.gradle"; then
+            push_all_modules
+          else
+            for MODULE in "${MODULES[@]}"; do
+              if echo "$CHANGED_FILES" | grep -q "module-$MODULE/"; then
+                push_module "$MODULE"
+              fi
+            done
+          fi
+
+      - name: Configure EKS
+        run: |
+          aws eks update-kubeconfig --region ${{ secrets.AWS_REGION }} --name my-cluster
+          
+      - name: Deploy Redis to Kubernetes
+        run: |
+          kubectl apply -f k8s/redis.yml
+          kubectl rollout status deployment/redis-master -n ticketable-project
+
+      - name: Deploy to Kubernetes
+        run: |
+          CHANGED_FILES="${{ steps.changed-files.outputs.all_changed_files }}"
+          MODULES=("auth" "game" "ticket" "gateway" "waiting" "auction")
+
+          deploy_all_modules() {
+            for MODULE in "${MODULES[@]}"; do
+              echo "Deploying module-$MODULE to Kubernetes..."
+              # Secret 값 치환
+              sed -i "s|\${{ secrets.DB_URL }}|${{ secrets.DB_URL }}|" module-$MODULE/k8s/secret.yml
+              sed -i "s|\${{ secrets.DB_USERNAME }}|${{ secrets.DB_USERNAME }}|" module-$MODULE/k8s/secret.yml
+              sed -i "s|\${{ secrets.DB_PASSWORD }}|${{ secrets.DB_PASSWORD }}|" module-$MODULE/k8s/secret.yml
+              sed -i "s|\${{ secrets.REDIS_PASSWORD }}|${{ secrets.REDIS_PASSWORD }}|" module-$MODULE/k8s/secret.yml
+              sed -i "s|\${{ secrets.JWT_SECRET_KEY }}|${{ secrets.JWT_SECRET_KEY }}|" module-$MODULE/k8s/secret.yml
+              sed -i "s|\${{ secrets.IMPORT_API_KEY }}|${{ secrets.IMPORT_API_KEY }}|" module-$MODULE/k8s/secret.yml
+              sed -i "s|\${{ secrets.IMPORT_API_SECRET }}|${{ secrets.IMPORT_API_SECRET }}|" module-$MODULE/k8s/secret.yml
+              sed -i "s|\${{ secrets.ACCESS_KEY }}|${{ secrets.ACCESS_KEY }}|" module-$MODULE/k8s/secret.yml
+              sed -i "s|\${{ secrets.SECRET_KEY }}|${{ secrets.SECRET_KEY }}|" module-$MODULE/k8s/secret.yml
+              # Configmap 값 치환
+              sed -i "s|\${{ secrets.REGION_VALUE }}|${{ secrets.REGION_VALUE }}|" module-$MODULE/k8s/configmap.yml
+              sed -i "s|\${{ secrets.JWT_ACCESS_TOKEN }}|${{ secrets.JWT_ACCESS_TOKEN }}|" module-$MODULE/k8s/configmap.yml
+              sed -i "s|\${{ secrets.BUCKET_NAME }}|${{ secrets.BUCKET_NAME }}|" module-$MODULE/k8s/configmap.yml
+              # 이미지 값 치환
+              sed -i "s|IMAGE_WILL_BE_REPLACED_BY_CD|$AWS_REGISTRY/repo-$MODULE:prod-$SHORT_SHA|" module-$MODULE/k8s/deployment.yml
+              kubectl apply -f module-$MODULE/k8s/
+              kubectl rollout status deployment/$MODULE -n ticketable-project
+            done
+          }
+
+          deploy_module() {
+            local module=$1
+            echo "Deploying module-$module to Kubernetes..."
+            # Secret 값 치환
+            sed -i "s|\${{ secrets.DB_URL }}|${{ secrets.DB_URL }}|" module-$MODULE/k8s/secret.yml
+            sed -i "s|\${{ secrets.DB_USERNAME }}|${{ secrets.DB_USERNAME }}|" module-$MODULE/k8s/secret.yml
+            sed -i "s|\${{ secrets.DB_PASSWORD }}|${{ secrets.DB_PASSWORD }}|" module-$MODULE/k8s/secret.yml
+            sed -i "s|\${{ secrets.REDIS_PASSWORD }}|${{ secrets.REDIS_PASSWORD }}|" module-$MODULE/k8s/secret.yml
+            sed -i "s|\${{ secrets.JWT_SECRET_KEY }}|${{ secrets.JWT_SECRET_KEY }}|" module-$MODULE/k8s/secret.yml
+            sed -i "s|\${{ secrets.IMPORT_API_KEY }}|${{ secrets.IMPORT_API_KEY }}|" module-$MODULE/k8s/secret.yml
+            sed -i "s|\${{ secrets.IMPORT_API_SECRET }}|${{ secrets.IMPORT_API_SECRET }}|" module-$MODULE/k8s/secret.yml
+            sed -i "s|\${{ secrets.ACCESS_KEY }}|${{ secrets.ACCESS_KEY }}|" module-$MODULE/k8s/secret.yml
+            sed -i "s|\${{ secrets.SECRET_KEY }}|${{ secrets.SECRET_KEY }}|" module-$MODULE/k8s/secret.yml
+            # Configmap 값 치환
+            sed -i "s|\${{ secrets.REGION_VALUE }}|${{ secrets.REGION_VALUE }}|" module-$MODULE/k8s/configmap.yml
+            sed -i "s|\${{ secrets.JWT_ACCESS_TOKEN }}|${{ secrets.JWT_ACCESS_TOKEN }}|" module-$MODULE/k8s/configmap.yml
+            sed -i "s|\${{ secrets.BUCKET_NAME }}|${{ secrets.BUCKET_NAME }}|" module-$MODULE/k8s/configmap.yml
+            # 이미지 값 치환
+            sed -i "s|IMAGE_WILL_BE_REPLACED_BY_CD|$AWS_REGISTRY/repo-$module:prod-$SHORT_SHA|" module-$module/k8s/deployment.yml
+            kubectl apply -f module-$module/k8s/
+            kubectl rollout status deployment/$module -n ticketable-project
+          }
+
+          if echo "$CHANGED_FILES" | grep -q "module-common/\|build.gradle\|settings.gradle"; then
+            deploy_all_modules
+          else
+            for MODULE in "${MODULES[@]}"; do
+              if echo "$CHANGED_FILES" | grep -q "module-$MODULE/"; then
+                deploy_module "$MODULE"
+              fi
+            done
+          fi

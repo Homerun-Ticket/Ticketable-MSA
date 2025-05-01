@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: game
+  namespace: ticketable-project
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: game
+  template:
+    metadata:
+      labels:
+        app: game
+    spec:
+      containers:
+        - name: game
+          image: IMAGE_WILL_BE_REPLACED_BY_CD
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: game-config
+            - secretRef:
+                name: game-secretsd

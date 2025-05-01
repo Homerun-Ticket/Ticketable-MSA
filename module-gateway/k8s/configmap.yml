@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gateway-config
+  namespace: ticketable-project
+data:
+  GATEWAY_ROUTES_MODULE_GAME: "http://game.ticketable-project.svc.cluster.local:80"
+  GATEWAY_ROUTES_MODULE_AUTH: "http://auth.ticketable-project.svc.cluster.local:80"
+  GATEWAY_ROUTES_MODULE_TICKET: "http://ticket.ticketable-project.svc.cluster.local:80"
+  REDIS_HOST: "redis-master"
+  REDIS_PORT: "6379"

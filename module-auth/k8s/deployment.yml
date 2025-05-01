@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth
+  namespace: ticketable-project
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth
+  template:
+    metadata:
+      labels:
+        app: auth
+    spec:
+      containers:
+        - name: auth
+          image: IMAGE_WILL_BE_REPLACED_BY_CD
+          ports:
+          - containerPort: 8080
+          envFrom:
+          - configMapRef:
+              name: auth-config
+          - secretRef:
+              name: auth-secrets

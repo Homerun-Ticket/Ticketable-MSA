@@ -1,0 +1,46 @@
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: module-game
+          uri: ${GATEWAY_ROUTES_MODULE_GAME}
+          predicates:
+            - Path=/api/v*/games/**, /api/v*/seats/**, /api/v*/sections/**, /api/v*/stadiums/**
+          filters:
+            - name: ValidateToken
+            - name: WaitingQueue
+            - RewritePath=/module-game/(?<segment>.*), /${segment}
+          metadata:
+            useWaiting: true
+            applyPath:
+              - "/api/v*/games/{gameId}"
+        - id: module-ticket
+          uri: ${GATEWAY_ROUTES_MODULE_TICKET}
+          predicates:
+            - Path=/api/v*/tickets/**, /api/v*/reservations/**, /api/v*/waiting-queue/**
+          filters:
+            - name: ValidateToken
+            - RewritePath=/module-ticket/(?<segment>.*), /${segment}
+        - id: module-auth
+          uri: ${GATEWAY_ROUTES_MODULE_AUTH}
+          predicates:
+            - Path=/api/v*/auth/**, /api/v*/members/**
+        - id: admin-game
+          uri: ${GATEWAY_ROUTES_MODULE_GAME}
+          predicates:
+            - Path=/api/v*/admin/**
+          filters:
+            - name: ValidateToken
+              args:
+                requiredRole: ROLE_ADMIN
+            - RewritePath=/admin-game/(?<segment>.*), /${segment}
+jwt:
+  secret:
+    key: ${JWT_SECRET_KEY}
+  access:
+    token: ${JWT_ACCESS_TOKEN}
+spring:
+  redis:
+    host: ${REDIS_HOST}
+    port: ${REDIS_PORT}
+    password: ${REDIS_PASSWORD}

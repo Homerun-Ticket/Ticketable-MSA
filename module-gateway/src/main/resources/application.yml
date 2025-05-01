@@ -1,10 +1,7 @@
 spring:
   main:
     web-application-type: reactive
-  profiles:
-    active: local
   application:
     name: module-gateway
-
 server:
   port: 8080

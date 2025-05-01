@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: waiting
+  namespace: ticketable-project
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: waiting
+  template:
+    metadata:
+      labels:
+        app: waiting
+    spec:
+      containers:
+        - name: waiting
+          image: IMAGE_WILL_BE_REPLACED_BY_CD
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: waiting-config
+            - secretRef:
+                name: waiting-secrets
