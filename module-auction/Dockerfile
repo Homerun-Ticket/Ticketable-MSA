@@ -12,4 +12,4 @@ LABEL maintainer="Inhak <inhak1122@google.com>"
 WORKDIR /app
 COPY --from=builder /app/module-auction/build/libs/*.jar app.jar
 EXPOSE 8084
-ENTRYPOINT ["java", "-jar", "/app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
