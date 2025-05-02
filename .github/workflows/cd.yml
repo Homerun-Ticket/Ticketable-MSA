@@ -169,9 +169,6 @@ jobs:
             fi
             # 도커 네트워크 생성
             docker network create my-network || true
-            # Redis 실행
-            docker rm -f redis || true
-            docker run -d --name redis --network my-network -p 6379:6379 redis:latest
             # 도커 로그인
             aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_REGISTRY }}
           EOF
