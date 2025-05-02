@@ -44,6 +44,8 @@ dependencies {
     implementation 'com.github.iamport:iamport-rest-client-java:0.1.6'
 
     testImplementation 'com.h2database:h2' // H2 테스트 전용으로 변경
+
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 }
 
 tasks.named('test') {
