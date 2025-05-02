@@ -154,7 +154,7 @@ jobs:
           MODULES=("eureka" "auth" "game" "ticket" "gateway" "waiting" "auction" "point")
           SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-8)
           
-          echo "$EC2_KEY" > ec2-key.pem
+          echo ${{ secrets.EC2_KEY }} > ec2-key.pem
           chmod 600 ec2-key.pem
 
           ssh -o StrictHostKeyChecking=no -i ec2-key.pem $EC2_USER@$EC2_HOST "echo connected"
