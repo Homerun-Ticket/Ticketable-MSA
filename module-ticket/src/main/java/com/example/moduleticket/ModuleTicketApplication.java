@@ -7,6 +7,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @SpringBootApplication
 @EnableDiscoveryClient
+// 테스트
 public class ModuleTicketApplication {
 
 	public static void main(String[] args) {

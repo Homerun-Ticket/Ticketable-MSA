@@ -8,6 +8,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 @SpringBootApplication
 @EnableFeignClients("com.example.moduleauth.feign")
 @EnableDiscoveryClient
+// 테스트
 public class ModuleAuthApplication {
 
 	public static void main(String[] args) {

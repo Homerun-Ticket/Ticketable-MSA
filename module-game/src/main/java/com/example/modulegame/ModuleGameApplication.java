@@ -3,9 +3,10 @@ package com.example.modulegame;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
-// 테스트 주석669988446633eggssfgzxdfsddfsdfgzcvsdsdggtf
+
 @SpringBootApplication
 @EnableDiscoveryClient
+// 테스트
 public class ModuleGameApplication {
 
 	public static void main(String[] args) {

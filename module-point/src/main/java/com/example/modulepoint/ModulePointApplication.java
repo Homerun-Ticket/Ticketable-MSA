@@ -6,6 +6,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
 @SpringBootApplication
 @EnableDiscoveryClient
+// 테스트
 public class ModulePointApplication {
 	
 	public static void main(String[] args) {

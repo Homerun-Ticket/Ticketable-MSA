@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 @EnableJpaAuditing
 @SpringBootApplication
 @EnableDiscoveryClient
+// 테스트
 public class ModuleAuctionApplication {
 
 	public static void main(String[] args) {
