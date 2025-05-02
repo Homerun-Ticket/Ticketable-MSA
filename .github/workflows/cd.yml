@@ -203,7 +203,7 @@ jobs:
                 esac
 
                 docker rm -f module-$MODULE || true
-                docker pull ${{ secrets.AWS_REGISTRY }}/repo-module-$MODULE:prod-$SHORT_SHA
+                docker pull ${{ secrets.AWS_REGISTRY }}:prod-$MODULE-$SHORT_SHA
                 docker run -d --name module-$MODULE --network my-network -p $port:8080 \
                   -e EUREKA_URL=http://module-eureka:8761/eureka/ \
                   -e SPRING_DATA_REDIS_HOST=redis \
