@@ -154,39 +154,37 @@ jobs:
             CHANGED_FILES="${{ steps.changed-files.outputs.all_changed_files }}"
             MODULES=("eureka" "auth" "game" "ticket" "gateway" "waiting" "auction" "point")
             SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-8)
-  
-              # 도커 설치
-              if ! command -v docker &> /dev/null; then
-                sudo yum update -y
-                sudo yum install docker -y
-                sudo systemctl start docker
-                sudo systemctl enable docker
-                sudo usermod -aG docker $USER
-                newgrp docker
-              fi
-              # 도커 네트워크 생성
-              docker network create my-network || true
-              # Redis 실행
-              docker rm -f redis || true
-              docker run -d --name redis --network my-network -p 6379:6379 redis:latest
-              # 도커 로그인
-              aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_REGISTRY }}
-            EOF
-  
-            # Eureka 서버 배포
-              docker rm -f module-eureka || true
-              docker pull ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-$SHORT_SHA
-              docker run -d --name module-eureka --network my-network -p 8761:8761 \
-                -e EUREKA_URL=http://module-eureka:8761/eureka/ \
-                ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-$SHORT_SHA
-            EOF
-  
-            sleep 10 # Eureka 서버 시작 대기
-  
-            deploy_all_modules() {
-              for MODULE in "${MODULES[@]}"; do
-                echo "Deploying module-$MODULE to EC2..."
-                local port
+      
+            # 도커 설치
+            if ! command -v docker &> /dev/null; then
+              sudo yum update -y
+              sudo yum install docker -y
+              sudo systemctl start docker
+              sudo systemctl enable docker
+              sudo usermod -aG docker $USER
+            fi
+      
+            # 도커 네트워크 및 Redis 컨테이너 준비
+            docker network create my-network || true
+            docker rm -f redis || true
+            docker run -d --name redis --network my-network -p 6379:6379 redis:latest
+      
+            # ECR 로그인
+            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_REGISTRY }}
+      
+            # Eureka 배포
+            docker rm -f module-eureka || true
+            docker pull ${{ secrets.AWS_REGISTRY }}/repo-module-eureka:prod-$SHORT_SHA
+            docker run -d --name module-eureka --network my-network -p 8761:8761 \
+            -e EUREKA_URL=http://module-eureka:8761/eureka/ \
+            ${{ secrets.AWS_REGISTRY }}/repo-module-eureka:prod-$SHORT_SHA
+      
+            sleep 10
+      
+            # 변경된 모듈만 배포
+            for MODULE in "${MODULES[@]}"; do
+              if echo "$CHANGED_FILES" | grep -q "module-common/\|module-$MODULE/\|build.gradle\|settings.gradle"; then
+                echo "🚀 Deploying module-$MODULE..."
                 case $MODULE in
                   "gateway") port=8080 ;;
                   "game") port=8081 ;;
@@ -196,67 +194,26 @@ jobs:
                   "waiting") port=8085 ;;
                   "point") port=8086 ;;
                   *) port=8080 ;;
-                esac
-                  docker rm -f module-$MODULE || true
-                  docker pull ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-$SHORT_SHA
-                  docker run -d --name module-$MODULE --network my-network -p $port:8080 \
-                    -e EUREKA_URL=http://module-eureka:8761/eureka/ \
-                    -e SPRING_DATA_REDIS_HOST=redis \
-                    -e DB_URL=${{ secrets.DB_URL }} \
-                    -e DB_USERNAME=${{ secrets.DB_USERNAME }} \
-                    -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
-                    -e JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }} \
-                    -e IMPORT_API_KEY=${{ secrets.IMPORT_API_KEY }} \
-                    -e IMPORT_API_SECRET=${{ secrets.IMPORT_API_SECRET }} \
-                    -e BUCKET_NAME=${{ secrets.BUCKET_NAME }} \
-                    -e REGION_VALUE=${{ secrets.REGION_VALUE }} \
-                    ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-$SHORT_SHA
-                EOF
-              done
-            }
-  
-            deploy_module() {
-              local module=$1
-              echo "Deploying module-$module to EC2..."
-              local port
-              case $module in
-                "gateway") port=8080 ;;
-                "game") port=8081 ;;
-                "ticket") port=8082 ;;
-                "auth") port=8083 ;;
-                "auction") port=8084 ;;
-                "waiting") port=8085 ;;
-                "point") port=8086 ;;
-                *) port=8080 ;;
-              esac
-                docker rm -f module-$module || true
-                docker pull ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-$SHORT_SHA
-                docker run -d --name module-$module --network my-network -p $port:8080 \
-                  -e EUREKA_URL=http://module-eureka:8761/eureka/ \
-                  -e SPRING_DATA_REDIS_HOST=redis \
-                  -e SPRING_DATA_REDIS_PORT=6379 \
-                  -e SPRING_PROFILES_ACTIVE=prod \
-                  -e DB_URL=${{ secrets.DB_URL }} \
-                  -e DB_USERNAME=${{ secrets.DB_USERNAME }} \
-                  -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
-                  -e JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }} \
-                  -e IMPORT_API_KEY=${{ secrets.IMPORT_API_KEY }} \
-                  -e IMPORT_API_SECRET=${{ secrets.IMPORT_API_SECRET }} \
-                  -e BUCKET_NAME=${{ secrets.BUCKET_NAME }} \
-                  -e REGION_VALUE=${{ secrets.REGION_VALUE }} \
-                  ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-$SHORT_SHA
-              EOF
-            }
-  
-            if echo "$CHANGED_FILES" | grep -q "module-common/\|build.gradle\|settings.gradle"; then
-              deploy_all_modules
-            else
-              for MODULE in "${MODULES[@]}"; do
-                if echo "$CHANGED_FILES" | grep -q "module-$MODULE/"; then
-                  deploy_module "$MODULE"
-                fi
-              done
+            esac
+            
+            docker rm -f module-$MODULE || true
+            docker pull ${{ secrets.AWS_REGISTRY }}/repo-module-$MODULE:prod-$SHORT_SHA
+            docker run -d --name module-$MODULE --network my-network -p $port:8080 \
+                -e EUREKA_URL=http://module-eureka:8761/eureka/ \
+                -e SPRING_DATA_REDIS_HOST=redis \
+                -e SPRING_DATA_REDIS_PORT=6379 \
+                -e SPRING_PROFILES_ACTIVE=prod \
+                -e DB_URL=${{ secrets.DB_URL }} \
+                -e DB_USERNAME=${{ secrets.DB_USERNAME }} \
+                -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
+                -e JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }} \
+                -e IMPORT_API_KEY=${{ secrets.IMPORT_API_KEY }} \
+                -e IMPORT_API_SECRET=${{ secrets.IMPORT_API_SECRET }} \
+                -e BUCKET_NAME=${{ secrets.BUCKET_NAME }} \
+                -e REGION_VALUE=${{ secrets.REGION_VALUE }} \
+                ${{ secrets.AWS_REGISTRY }}/repo-module-$MODULE:prod-$SHORT_SHA
             fi
+            done
 
       - name: Test Deployment
         run: |
