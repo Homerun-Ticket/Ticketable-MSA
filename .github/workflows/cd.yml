@@ -196,7 +196,6 @@ jobs:
                   -e EUREKA_URL=http://module-eureka:8761/eureka/ \
                   -e SPRING_DATA_REDIS_HOST=redis \
                   -e SPRING_DATA_REDIS_PORT=6379 \
-                  -e SPRING_PROFILES_ACTIVE=prod \
                   -e DB_URL=${{ secrets.DB_URL }} \
                   -e DB_USERNAME=${{ secrets.DB_USERNAME }} \
                   -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
