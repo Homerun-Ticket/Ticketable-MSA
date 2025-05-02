@@ -206,6 +206,7 @@ jobs:
                   -e SECRET_KEY=${{ secrets.AWS_SECRET_KEY }} \
                   -e RECAPTCHA_VERIFY_URL=${{ secrets.RECAPTCHA_VERIFY_URL }} \
                   -e RECAPTCHA_SECRET_KEY=${{ secrets.RECAPTCHA_SECRET_KEY }} \
+                  -e REDIS_HOST=${{ secrets.EC2_HOST }} \
                   ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-$MODULE-$SHORT_SHA
               fi
             done
