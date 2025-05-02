@@ -173,15 +173,6 @@ jobs:
             aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | \
               docker login --username AWS --password-stdin ${{ secrets.AWS_REGISTRY }}
 
-            # Eureka 배포
-            docker rm -f module-eureka || true
-            docker pull ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-eureka-$SHORT_SHA
-            docker run -d --name module-eureka --network my-network -p 8761:8761 \
-              -e EUREKA_URL=http://module-eureka:8761/eureka/ \
-              ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-eureka-$SHORT_SHA
-
-            sleep 10
-
             # 변경된 모듈만 배포
             for MODULE in "${MODULES[@]}"; do
               if echo "$CHANGED_FILES" | grep -q "module-common/\|module-$MODULE/\|build.gradle\|settings.gradle"; then
