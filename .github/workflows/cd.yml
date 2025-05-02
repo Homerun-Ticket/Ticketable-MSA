@@ -217,7 +217,7 @@ jobs:
                   -e IMPORT_API_SECRET=${{ secrets.IMPORT_API_SECRET }} \
                   -e BUCKET_NAME=${{ secrets.BUCKET_NAME }} \
                   -e REGION_VALUE=${{ secrets.REGION_VALUE }} \
-                  ${{ secrets.AWS_REGISTRY }}/repo-module-$MODULE:prod-$SHORT_SHA
+                  ${{ secrets.AWS_REGISTRY }}:prod-$MODULE-$SHORT_SHA
               fi
             done
 
