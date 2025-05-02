@@ -37,7 +37,7 @@ subprojects {
         testImplementation 'org.springframework.boot:spring-boot-starter-test'
         testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
         implementation 'org.springframework.boot:spring-boot-starter-validation'
-        runtimeOnly 'com.h2database:h2'  // H2 테스트 전용으로 변경
+        runtimeOnly 'com.h2database:h2'  // H2 테스트 전용으로 변경 테스트1
 
         runtimeOnly 'com.mysql:mysql-connector-j'
         implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
