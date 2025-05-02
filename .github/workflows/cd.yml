@@ -153,8 +153,11 @@ jobs:
           CHANGED_FILES="${{ steps.changed-files.outputs.all_changed_files }}"
           MODULES=("eureka" "auth" "game" "ticket" "gateway" "waiting" "auction" "point")
           SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-8)
+          
+          echo "$EC2_KEY" > ec2-key.pem
+          chmod 600 ec2-key.pem
 
-          ssh -o StrictHostKeyChecking=no -i <(echo "$EC2_KEY") $EC2_USER@$EC2_HOST << 'EOF'
+          ssh -o StrictHostKeyChecking=no -i ec2-key.pem $EC2_USER@$EC2_HOST "echo connected"
             # 도커 설치
             if ! command -v docker &> /dev/null; then
               sudo yum update -y
@@ -174,7 +177,7 @@ jobs:
           EOF
 
           # Eureka 서버 배포
-          ssh -o StrictHostKeyChecking=no -i <(echo "$EC2_KEY") $EC2_USER@$EC2_HOST << 'EOF'
+          ssh -o StrictHostKeyChecking=no -i ec2-key.pem $EC2_USER@$EC2_HOST "echo connected"
             docker rm -f module-eureka || true
             docker pull ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-$MODULE-$SHORT_SHA
             docker run -d --name module-eureka --network my-network -p 8761:8761 \
@@ -198,7 +201,7 @@ jobs:
                 "point") port=8086 ;;
                 *) port=8080 ;;
               esac
-              ssh -o StrictHostKeyChecking=no -i <(echo "$EC2_KEY") $EC2_USER@$EC2_HOST << EOF
+              ssh -o StrictHostKeyChecking=no -i ec2-key.pem $EC2_USER@$EC2_HOST "echo connected"
                 docker rm -f module-$MODULE || true
                 docker pull ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-$MODULE-$SHORT_SHA
                 docker run -d --name module-$MODULE --network my-network -p $port:8080 \
@@ -231,7 +234,7 @@ jobs:
               "point") port=8086 ;;
               *) port=8080 ;;
             esac
-            ssh -o StrictHostKeyChecking=no -i <(echo "$EC2_KEY") $EC2_USER@$EC2_HOST << EOF
+            ssh -o StrictHostKeyChecking=no -i ec2-key.pem $EC2_USER@$EC2_HOST "echo connected"
               docker rm -f module-$module || true
               docker pull ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-$MODULE-$SHORT_SHA
               docker run -d --name module-$module --network my-network -p $port:8080 \
