@@ -119,7 +119,7 @@ jobs:
               docker buildx build \
                 --cache-from type=local,src=/tmp/.buildx-cache \
                 --cache-to type=local,dest=/tmp/.buildx-cache \
-                -t $AWS_REGISTRY/repo-module-$MODULE:prod-$SHORT_SHA \
+                -t $AWS_REGISTRY/repo-ticketable:prod-$SHORT_SHA \
                 --push -f module-$MODULE/Dockerfile .
             done
           }
@@ -130,7 +130,7 @@ jobs:
             docker buildx build \
               --cache-from type=local,src=/tmp/.buildx-cache \
               --cache-to type=local,dest=/tmp/.buildx-cache \
-              -t $AWS_REGISTRY/repo-module-$module:prod-$SHORT_SHA \
+              -t $AWS_REGISTRY/repo-ticketable:prod-$SHORT_SHA \
               --push -f module-$module/Dockerfile .
           }
 
@@ -176,10 +176,10 @@ jobs:
           # Eureka 서버 배포
           ssh -o StrictHostKeyChecking=no -i <(echo "$EC2_KEY") $EC2_USER@$EC2_HOST << 'EOF'
             docker rm -f module-eureka || true
-            docker pull ${{ secrets.AWS_REGISTRY }}/repo-module-eureka:prod-$SHORT_SHA
+            docker pull ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-$SHORT_SHA
             docker run -d --name module-eureka --network my-network -p 8761:8761 \
               -e EUREKA_URL=http://module-eureka:8761/eureka/ \
-              ${{ secrets.AWS_REGISTRY }}/repo-module-eureka:prod-$SHORT_SHA
+              ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-$SHORT_SHA
           EOF
 
           sleep 10 # Eureka 서버 시작 대기
@@ -200,7 +200,7 @@ jobs:
               esac
               ssh -o StrictHostKeyChecking=no -i <(echo "$EC2_KEY") $EC2_USER@$EC2_HOST << EOF
                 docker rm -f module-$MODULE || true
-                docker pull ${{ secrets.AWS_REGISTRY }}/repo-module-$MODULE:prod-$SHORT_SHA
+                docker pull ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-$SHORT_SHA
                 docker run -d --name module-$MODULE --network my-network -p $port:8080 \
                   -e EUREKA_URL=http://module-eureka:8761/eureka/ \
                   -e SPRING_DATA_REDIS_HOST=redis \
@@ -233,7 +233,7 @@ jobs:
             esac
             ssh -o StrictHostKeyChecking=no -i <(echo "$EC2_KEY") $EC2_USER@$EC2_HOST << EOF
               docker rm -f module-$module || true
-              docker pull ${{ secrets.AWS_REGISTRY }}/repo-module-$module:prod-$SHORT_SHA
+              docker pull ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-$SHORT_SHA
               docker run -d --name module-$module --network my-network -p $port:8080 \
                 -e EUREKA_URL=http://module-eureka:8761/eureka/ \
                 -e SPRING_DATA_REDIS_HOST=redis \
@@ -247,7 +247,7 @@ jobs:
                 -e IMPORT_API_SECRET=${{ secrets.IMPORT_API_SECRET }} \
                 -e BUCKET_NAME=${{ secrets.BUCKET_NAME }} \
                 -e REGION_VALUE=${{ secrets.REGION_VALUE }} \
-                ${{ secrets.AWS_REGISTRY }}/repo-module-$module:prod-$SHORT_SHA
+                ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-$SHORT_SHA
             EOF
           }
 
