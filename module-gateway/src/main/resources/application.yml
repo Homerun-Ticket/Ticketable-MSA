@@ -2,9 +2,50 @@ spring:
   main:
     web-application-type: reactive
   profiles:
-    active: local
+    active: local # 프로덕션 기본값
   application:
-    name: module-gateway
+    name: gateway
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      client-name: ${REDIS_USER}
+      password: ${REDIS_PASSWORD}
+
+  cloud:
+    gateway:
+      routes:
+        - id: auth_route
+          uri: lb://module-auth
+          predicates:
+            - Path=/auth/**
+        - id: auction_route
+          uri: lb://module-auction
+          predicates:
+            - Path=/auction/**
+        - id: game_route
+          uri: lb://module-game
+          predicates:
+            - Path=/game/**
+        - id: ticket_route
+          uri: lb://module-ticket
+          predicates:
+            - Path=/ticket/**
+        - id: waiting_route
+          uri: lb://module-waiting
+          predicates:
+            - Path=/waiting/**
+        - id: point_route
+          uri: lb://module-point
+          predicates:
+            - Path=/point/**
 
 server:
   port: 8080
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka}
