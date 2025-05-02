@@ -12,5 +12,5 @@ FROM amazoncorretto:17
 LABEL maintainer="Inhak <inhak1122@google.com>"
 WORKDIR /app
 COPY --from=builder /app/module-point/build/libs/*.jar app.jar
-EXPOSE 8086
+EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
