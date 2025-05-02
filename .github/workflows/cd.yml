@@ -179,6 +179,7 @@ jobs:
                 echo "🚀 Deploying module-$MODULE"
 
                 case $MODULE in
+                  "eureka") port=8761 ;;
                   "gateway") port=8080 ;;
                   "game") port=8081 ;;
                   "ticket") port=8082 ;;
@@ -191,7 +192,7 @@ jobs:
 
                 docker rm -f module-$MODULE || true
                 docker pull ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-$MODULE-$SHORT_SHA
-                docker run -d --name module-$MODULE --network my-network -p $port:8080 \
+                docker run -d --name module-$MODULE --network my-network -p $port:$port \
                   -e EUREKA_URL=http://module-eureka:8761/eureka/ \
                   -e SPRING_DATA_REDIS_HOST=redis \
                   -e SPRING_DATA_REDIS_PORT=6379 \
@@ -204,10 +205,10 @@ jobs:
                   -e IMPORT_API_SECRET=${{ secrets.IMPORT_API_SECRET }} \
                   -e BUCKET_NAME=${{ secrets.BUCKET_NAME }} \
                   -e REGION_VALUE=${{ secrets.REGION_VALUE }} \
-                  -e ACCESS_KEY = ${{ secrets.AWS_ACCESS_KEY }} \
-                  -e SECRET_KEY = ${{ secrets.AWS_SECRET_KEY}} \
-                  -e RECAPTCHA_VERIFY_URL =  ${{ secrets.RECAPTCHA_VERIFY_URL }} \
-                  -e RECAPTCHA_SECRET_KEY =  ${{ secrets.RECAPTCHA_SECRET_KEY }} \
+                  -e ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }} \
+                  -e SECRET_KEY=${{ secrets.AWS_SECRET_KEY }} \
+                  -e RECAPTCHA_VERIFY_URL=${{ secrets.RECAPTCHA_VERIFY_URL }} \
+                  -e RECAPTCHA_SECRET_KEY=${{ secrets.RECAPTCHA_SECRET_KEY }} \
                   ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-$MODULE-$SHORT_SHA
               fi
             done
