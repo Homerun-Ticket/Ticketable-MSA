@@ -213,6 +213,10 @@ jobs:
                   -e IMPORT_API_SECRET=${{ secrets.IMPORT_API_SECRET }} \
                   -e BUCKET_NAME=${{ secrets.BUCKET_NAME }} \
                   -e REGION_VALUE=${{ secrets.REGION_VALUE }} \
+                  -e ACCESS_KEY = ${{ secrets.AWS_ACCESS_KEY }} \
+                  -e SECRET_KEY = ${{ secrets.AWS_SECRET_KEY}} \
+                  -e RECAPTCHA_VERIFY_URL =  ${{ secrets.RECAPTCHA_VERIFY_URL }} \
+                  -e RECAPTCHA_SECRET_KEY =  ${{ secrets.RECAPTCHA_SECRET_KEY }} \
                   ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-$MODULE-$SHORT_SHA
               fi
             done
