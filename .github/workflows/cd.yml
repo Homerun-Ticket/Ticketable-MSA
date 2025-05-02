@@ -198,6 +198,7 @@ jobs:
                   -e DB_USERNAME=${{ secrets.DB_USERNAME }} \
                   -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
                   -e JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }} \
+                  -e JWT_ACCESS_TOKEN=${{ secrets.JWT_ACCESS_TOKEN }} \
                   -e IMPORT_API_KEY=${{ secrets.IMPORT_API_KEY }} \
                   -e IMPORT_API_SECRET=${{ secrets.IMPORT_API_SECRET }} \
                   -e BUCKET_NAME=${{ secrets.BUCKET_NAME }} \
