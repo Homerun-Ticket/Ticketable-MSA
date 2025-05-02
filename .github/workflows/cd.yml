@@ -169,20 +169,16 @@ jobs:
             # Docker 네트워크 생성
             docker network create my-network || true
 
-            # Redis 실행 (포트 바인딩 없이 내부 통신만)
-            docker rm -f redis || true
-            docker run -d --name redis --network my-network redis:latest
-
             # ECR 로그인
             aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | \
               docker login --username AWS --password-stdin ${{ secrets.AWS_REGISTRY }}
 
             # Eureka 배포
             docker rm -f module-eureka || true
-            docker pull ${{ secrets.AWS_REGISTRY }}/repo-module-eureka:prod-$SHORT_SHA
+            docker pull ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-eureka-$SHORT_SHA
             docker run -d --name module-eureka --network my-network -p 8761:8761 \
               -e EUREKA_URL=http://module-eureka:8761/eureka/ \
-              ${{ secrets.AWS_REGISTRY }}/repo-module-eureka:prod-$SHORT_SHA
+              ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-eureka-$SHORT_SHA
 
             sleep 10
 
