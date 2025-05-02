@@ -7,8 +7,10 @@ spring:
     name: gateway
   data:
     redis:
-      host: ${SPRING_DATA_REDIS_HOST:localhost}
-      port: ${SPRING_DATA_REDIS_PORT:6379}
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      client-name: ${REDIS_USER}
+      password: ${REDIS_PASSWORD}
 
   cloud:
     gateway:

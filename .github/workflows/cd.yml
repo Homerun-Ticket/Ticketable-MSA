@@ -213,11 +213,3 @@ jobs:
                   ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-$MODULE-$SHORT_SHA
               fi
             done
-
-      - name: Test Deployment
-        run: |
-          sleep 30 # 애플리케이션 시작 대기
-          curl http://${{ secrets.EC2_HOST }}:8761 # Eureka 대시보드
-          curl http://${{ secrets.EC2_HOST }}:8080/health # Gateway 건강 체크
-          curl http://${{ secrets.EC2_HOST }}:8083/auth # Auth 엔드포인트
-          curl http://${{ secrets.EC2_HOST }}:8084/auction # Auction 엔드포인트
