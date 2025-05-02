@@ -30,23 +30,4 @@ public class RedisEventListener implements MessageListener {
             log.error("❌ 이벤트 수신 중 에러 발생", e);
         }
     }
-
-// Rsocket 용 Listener
-//    public void onMessage(Message message, byte[] pattern) {
-//        try {
-//            String json = new String(message.getBody());
-//            TicketEvent event = objectMapper.readValue(json, TicketEvent.class);
-//
-////            // 캐시 갱신 처리
-////            gameCacheService.handleAfterTicketChangeAll(event.getGameId(), event.getSeatId());
-//            gameCacheService.handleAfterTicketChangeAll(event.getGameId(), event.getSeatId())
-//                    .subscribe(
-//                            unused -> log.info("✅ 티켓 변경 이벤트 처리 완료 - gameId: {}", event.getGameId()),
-//                            error -> log.error("❌ 이벤트 처리 중 오류 발생", error)
-//                    );
-//
-//        } catch (Exception e) {
-//            log.error("❌ 이벤트 수신 중 에러 발생", e);
-//        }
-//    }
 }

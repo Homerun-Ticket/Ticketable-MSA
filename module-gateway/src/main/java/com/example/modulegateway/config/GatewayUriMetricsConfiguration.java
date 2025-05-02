@@ -1,11 +1,7 @@
 package com.example.modulegateway.config;
 
-import static com.fasterxml.jackson.databind.jsonFormatVisitors.JsonValueFormat.URI;
-
 import io.micrometer.common.KeyValue;
 import io.micrometer.common.KeyValues;
-import java.util.List;
-import java.util.Optional;
 import org.springframework.cloud.gateway.config.GatewayProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,6 +11,8 @@ import org.springframework.http.server.reactive.observation.ServerRequestObserva
 import org.springframework.http.server.reactive.observation.ServerRequestObservationConvention;
 import org.springframework.web.util.pattern.PathPattern;
 import org.springframework.web.util.pattern.PathPatternParser;
+
+import java.util.List;
 
 @Configuration
 public class GatewayUriMetricsConfiguration {

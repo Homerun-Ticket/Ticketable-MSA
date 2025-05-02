@@ -38,7 +38,6 @@ public class SectionController {
         return ResponseEntity.ok(sectionService.updateSection(sectionId, request));
     }
 
-
     @DeleteMapping("/v1/admin/sections/{sectionId}")
     public ResponseEntity<Void> deleteSection(
             @PathVariable Long sectionId

@@ -1,9 +1,7 @@
 package com.example.modulepoint.domain.exchange.service;
 
 
-import static com.example.modulecommon.exception.ErrorCode.*;
-
-import com.example.modulecommon.exception.ServerException;
+import com.example.modulepoint.global.exception.ServerException;
 import com.example.modulepoint.domain.exchange.dto.response.ExchangeHistoryResponse;
 import com.example.modulepoint.domain.exchange.dto.response.ExchangeResponse;
 import com.example.modulepoint.domain.point.entity.Point;
@@ -21,6 +19,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PagedModel;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import static com.example.modulepoint.global.exception.ErrorCode.*;
 
 @Service
 @RequiredArgsConstructor

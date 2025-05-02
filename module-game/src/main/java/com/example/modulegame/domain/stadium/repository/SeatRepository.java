@@ -1,17 +1,13 @@
 package com.example.modulegame.domain.stadium.repository;
 
-
-
-import com.example.modulegame.domain.game.dto.SeatDto;
-import java.util.List;
-import java.util.Optional;
-
 import com.example.modulegame.domain.game.dto.SeatDetailDto;
 import com.example.modulegame.domain.stadium.entity.Seat;
-import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import java.util.List;
+import java.util.Optional;
 
 
 public interface SeatRepository extends JpaRepository<Seat, Long> {

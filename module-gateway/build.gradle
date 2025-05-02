@@ -34,10 +34,13 @@ dependencies {
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
     implementation("io.micrometer:micrometer-registry-prometheus")
     implementation 'org.springframework.boot:spring-boot-starter-data-redis-reactive'
+<<<<<<< HEAD
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 
+=======
+>>>>>>> e31ba36aa69e3ec0abc1468c7bf58b636184e7ca
 }
 
 tasks.named('test') {

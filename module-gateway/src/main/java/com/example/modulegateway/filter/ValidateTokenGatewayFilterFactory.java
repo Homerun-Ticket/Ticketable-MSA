@@ -7,6 +7,7 @@ import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFac
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ResponseStatusException;
@@ -45,14 +46,24 @@ public class ValidateTokenGatewayFilterFactory
 					.queryParam("requiredRole", config.getRequiredRole())
 					.build())
 				.header(HttpHeaders.AUTHORIZATION, authHeader)
-				.retrieve()
-				.onStatus(HttpStatusCode::isError,
-					resp -> Mono.error(new ResponseStatusException(resp.statusCode())))
-				.bodyToMono(Void.class)
-				.then(chain.filter(exchange))
-				.onErrorResume(ResponseStatusException.class, ex -> {
-					exchange.getResponse().setStatusCode(ex.getStatusCode());
-					return exchange.getResponse().setComplete();
+				.exchangeToMono(response -> {
+					if (response.statusCode().isError()) {
+						exchange.getResponse().setStatusCode(response.statusCode());
+						return exchange.getResponse().setComplete();
+					}
+					
+					HttpHeaders header = response.headers().asHttpHeaders();
+					String memberId = header.getFirst("memberId");
+					String role = header.getFirst("role");
+					
+					ServerHttpRequest request = exchange.getRequest().mutate()
+						.header("memberId", memberId)
+						.header("role", role)
+						.build();
+					
+					return chain.filter(exchange.mutate()
+						.request(request)
+						.build());
 				});
 		};
 	}

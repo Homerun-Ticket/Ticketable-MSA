@@ -9,6 +9,7 @@ import java.util.Set;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface TicketRepository extends JpaRepository<Ticket, Long> {
 
@@ -53,4 +54,9 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
 		+ "  WHERE t.deletedAt is null "
 		+ "    AND t.gameId = :gameId")
 	List<Ticket> findByGameId(Long gameId);
+
+	@Modifying
+	@Query("UPDATE Ticket t SET t.memberId = :newOwnerId WHERE t.id = :ticketId")
+	void changeOwner(@Param("ticketId") Long ticketId, @Param("newOwnerId") Long newOwnerId);
+
 }

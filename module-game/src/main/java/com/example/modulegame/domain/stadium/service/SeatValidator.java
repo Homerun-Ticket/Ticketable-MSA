@@ -3,12 +3,13 @@ package com.example.modulegame.domain.stadium.service;
 
 import java.util.List;
 
-import com.example.modulecommon.exception.ServerException;
+import com.example.modulegame.global.exception.ServerException;
 import com.example.modulegame.domain.game.repository.GameRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import static com.example.modulecommon.exception.ErrorCode.SEAT_NOT_FOUND;
+import static com.example.modulegame.global.exception.ErrorCode.SEAT_NOT_FOUND;
+
 
 @Component
 @RequiredArgsConstructor

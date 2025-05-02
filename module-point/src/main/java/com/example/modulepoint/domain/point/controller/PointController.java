@@ -1,5 +1,8 @@
 package com.example.modulepoint.domain.point.controller;
 
+import com.example.modulepoint.domain.point.dto.request.ChargePointRequest;
+import com.example.modulepoint.global.annotation.LoginUser;
+import com.example.modulepoint.global.entity.AuthUser;
 import com.example.modulepoint.domain.point.dto.request.ExchangePointRequest;
 import com.example.modulepoint.domain.point.dto.request.PointPaymentRequestDto;
 import com.example.modulepoint.domain.point.dto.response.PointResponse;
@@ -17,25 +20,25 @@ public class PointController {
 
 	private final PointService pointService;
 
-	@PostMapping("/v1/members/{memberId}/points/exchange")
+	@PostMapping("/v1/points/exchange")
 	public ResponseEntity<PointResponse> exchangePoint(
-		@PathVariable Long memberId,
+		@LoginUser AuthUser authUser,
 		@Valid @RequestBody ExchangePointRequest request
 	) {
-		return ResponseEntity.ok(pointService.exchangePoint(memberId, request));
+		return ResponseEntity.ok(pointService.exchangePoint(authUser.getMemberId(), request));
 	}
 
-	@GetMapping("/v1/members/{memberId}/points")
+	@GetMapping("/v1/points")
 	public ResponseEntity<PointResponse> getMemberPoint(
-		@PathVariable Long memberId
-	) {
-		return ResponseEntity.ok(pointService.getMemberPoint(memberId));
+		@LoginUser AuthUser authUser
+		) {
+		return ResponseEntity.ok(pointService.getMemberPoint(authUser.getMemberId()));
 	}
 	
 	@PostMapping("/v1/points")
 	public ResponseEntity<Void> createPoint(
 		@RequestParam Long memberId
-		) {
+	) {
 		pointService.createPoint(memberId);
 		return ResponseEntity.ok().build();
 	}
@@ -68,4 +71,12 @@ public class PointController {
 		return ResponseEntity.ok().build();
 	}
 
+	// 어드민 포인트 충전 (테스트를 위함)
+	@PostMapping("/v1/admin/points/charge")
+	public ResponseEntity<PointResponse> chargePoint(
+		@LoginUser AuthUser authUser,
+		@RequestBody ChargePointRequest request
+	) {
+		return ResponseEntity.ok(pointService.chargePoint(authUser.getMemberId(), request));
+	}
 }

@@ -59,16 +59,16 @@ spring:
         - id: module-point
           uri: lb://module-point
           predicates:
-            - Path=/api/v*/members/**
+            - Path=/api/v*/points/**, /api/v*/pointHistories/**, /api/v*/payments/**
           filters:
             - name: ValidateToken
-            - RewritePath=/point-module/(?<segment>.*), /${segment}
+            - RewritePath=/module-point/(?<segment>.*), /${segment}
 
 
         - id: admin-game
           uri: lb://module-game
           predicates:
-            - Path=/api/v*/admin/**
+            - Path=/api/v*/admin/games/**, /api/v*/admin/sections/**, /api/v*/admin/seats/**, api/v*/admin/stadiums/**
           filters:
             - name: ValidateToken
               args:
@@ -79,12 +79,13 @@ spring:
         - id: exchange-point
           uri: lb://module-point
           predicates:
-            - Path=/api/v*/admin/**
+            - Path=/api/v*/admin/points/**, /api/v*/admin/exchangeHistories/**
           filters:
             - name: ValidateToken
               args:
                 requiredRole: ROLE_ADMIN
             - RewritePath=/exchange-point/(?<segment>.*), /${segment}
+
       httpclient:
         pool:
           maxConnections: 1000

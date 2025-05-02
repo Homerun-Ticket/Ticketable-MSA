@@ -1,6 +1,6 @@
 package com.example.modulepoint.domain.point.entity;
 
-import com.example.modulecommon.entity.Timestamped;
+import com.example.modulepoint.global.entity.Timestamped;
 import com.example.modulepoint.domain.point.enums.PointHistoryType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

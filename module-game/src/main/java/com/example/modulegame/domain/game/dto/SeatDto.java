@@ -1,6 +1,5 @@
 package com.example.modulegame.domain.game.dto;
 
-import com.example.modulegame.domain.stadium.entity.Seat;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

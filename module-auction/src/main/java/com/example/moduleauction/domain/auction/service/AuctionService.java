@@ -1,8 +1,10 @@
 package com.example.moduleauction.domain.auction.service;
 
-import static com.example.modulecommon.exception.ErrorCode.*;
+import static com.example.moduleauction.config.exception.ErrorCode.*;
 
 import com.example.moduleauction.domain.auction.dto.AuctionDetailDto;
+import com.example.moduleauction.domain.auction.dto.RecoveryDto;
+import com.example.moduleauction.domain.auction.dto.RefundDto;
 import com.example.moduleauction.domain.auction.event.BidSaveEvent;
 import com.example.moduleauction.domain.auction.event.AuctionDetailSaveEvent;
 import com.example.moduleauction.feign.GameClient;
@@ -11,9 +13,10 @@ import com.example.moduleauction.feign.TicketClient;
 import com.example.moduleauction.feign.dto.GameDto;
 import com.example.moduleauction.feign.dto.SectionAndPositionDto;
 import com.example.moduleauction.feign.dto.TicketDto;
+import com.example.moduleauction.domain.auction.dto.TicketChangeOwnerDto;
 import com.example.moduleauction.util.AuctionDetailRedisUtil;
-import com.example.modulecommon.entity.AuthUser;
-import com.example.modulecommon.exception.ServerException;
+import com.example.moduleauction.domain.auction.entity.AuthUser;
+import com.example.moduleauction.config.exception.ServerException;
 import com.example.moduleauction.domain.auction.event.BidUpdateEvent;
 import com.example.moduleauction.domain.auction.dto.request.AuctionBidRequest;
 import com.example.moduleauction.domain.auction.dto.request.AuctionCreateRequest;
@@ -24,8 +27,8 @@ import com.example.moduleauction.domain.auction.entity.Auction;
 import com.example.moduleauction.domain.auction.entity.AuctionTicketInfo;
 import com.example.moduleauction.domain.auction.repository.AuctionHistoryRepository;
 import com.example.moduleauction.domain.auction.repository.AuctionRepository;
-import com.example.moduleauction.domain.auction.repository.AuctionTicketInfoRepository;
 import com.example.moduleauction.util.AuctionBidRedisUtil;
+
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Comparator;
@@ -34,6 +37,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -53,13 +57,16 @@ public class AuctionService {
 
 	private final AuctionRepository auctionRepository;
 	private final AuctionHistoryRepository auctionHistoryRepository;
-	private final AuctionTicketInfoRepository auctionTicketInfoRepository;
 
 	private final AuctionTicketInfoService auctionTicketInfoService;
 	private final AuctionHistoryService auctionHistoryService;
+	private final AuctionPaymentService auctionPaymentService;
+	private final PointQueueService pointQueueService;
+	private final TicketQueueService ticketQueueService;
 	private final AuctionBidRedisUtil auctionBidRedisUtil;
 	private final AuctionDetailRedisUtil auctionDetailRedisUtil;
 	private final ApplicationEventPublisher applicationEventPublisher;
+
 	private final TicketClient ticketClient;
 	private final GameClient gameClient;
 	private final SeatClient seatClient;
@@ -90,7 +97,8 @@ public class AuctionService {
 			.sorted(Comparator.comparingInt(pos -> Integer.parseInt(pos.split(" ")[1])))
 			.toList();
 
-		AuctionTicketInfo auctionTicketInfo = auctionTicketInfoService.createAuctionTicketInfo(ticket, game, sortedPositions);
+		AuctionTicketInfo auctionTicketInfo = auctionTicketInfoService.createAuctionTicketInfo(ticket, game,
+			sortedPositions);
 
 		Auction auction = Auction.builder()
 			.sellerId(authUser.getMemberId())
@@ -123,7 +131,8 @@ public class AuctionService {
 		Page<Long> pages = auctionRepository.findByConditions(dto, pageable);
 		List<Long> ids = pages.getContent();
 		if (ids.isEmpty()) {
-			Page<AuctionResponse> emptyPages = new PageImpl<>(Collections.emptyList(), pageable, pages.getTotalElements());
+			Page<AuctionResponse> emptyPages = new PageImpl<>(Collections.emptyList(), pageable,
+				pages.getTotalElements());
 			return new PagedModel<>(emptyPages);
 		}
 
@@ -164,9 +173,9 @@ public class AuctionService {
 			throw new ServerException(INVALID_BIDDING_AMOUNT);
 		}
 
-		// 3. 경매가 종료된 경우 예외처리
+		// 3. 경매가 종료시간이 된 경우 예외처리
 		if (auction.isTimeOver()) {
-			expireAuction(auction);
+			expireAuction(List.of(auction));
 			throw new ServerException(AUCTION_TIME_OVER);
 		}
 
@@ -185,19 +194,19 @@ public class AuctionService {
 			throw new ServerException(AUCTION_ACCESS_DENIED);
 		}
 
-		// // 7. 입찰자 포인트 확인 및 회수
-		// pointService.decreasePoint(authUser.getId(), dto.getCurrentBidPoint() + BID_UNIT, PointHistoryType.BID);
+		// 7. 입찰자 포인트 확인 및 회수
+		Integer nextBid = auction.getBidPoint() + BID_UNIT;
+		auctionPaymentService.processPayment(authUser.getMemberId(), nextBid, "BID");
 
 		// 8~9. 해당 경매기록에서, 가격이 같은 기록이 존재하면 예외처리 + 경매기록 저장
 		auctionHistoryService.createAuctionHistory(auction, authUser.getMemberId(), dto);
 
 		// 10. 이전 입찰자에게 입찰금 환급
-		// if (auction.hasBidder()) {
-		// 	pointService.increasePoint(auction.getBidder().getId(), auction.getBidPoint(), PointHistoryType.BID_REFUND);
-		// }
+		if (auction.hasBidder()) {
+			auctionPaymentService.processRefund(auction.getBidderId(), auction.getBidPoint(), "BID_REFUND");
+		}
 
 		// 11. 입찰내용 업데이트
-		Integer nextBid = auction.getBidPoint() + BID_UNIT;
 		auction.updateBid(authUser.getMemberId(), nextBid);
 
 		// 12. Event 발행을 통한 로직 실행순서 통제
@@ -219,10 +228,7 @@ public class AuctionService {
 			throw new ServerException(AUCTION_ACCESS_DENIED);
 		}
 
-		auctionBidRedisUtil.deleteBidKey(auctionId);
-		auctionDetailRedisUtil.deleteAuctionDetail(auctionId);
-
-		auction.setDeletedAt();
+		expireAuction(List.of(auction));
 	}
 
 	private Auction findAuction(Long auctionId) {
@@ -230,16 +236,15 @@ public class AuctionService {
 			.orElseThrow(() -> new ServerException(AUCTION_NOT_FOUND));
 	}
 
-	private void expireAuction(Auction auction) {
-		auction.setDeletedAt();
+	private void expireAuction(List<Auction> auctions) {
+		if (auctions.isEmpty()) { return; }
+		List<Long> auctionIds = auctions.stream().map(Auction::getId).toList();
+		auctionRepository.softDeleteAllByIds(auctionIds);
 
-		// if (auction.hasBidder()) {
-		// 	pointService.increasePoint(auction.getSeller().getId(), auction.getBidPoint(), PointHistoryType.SELL);
-		// 	auction.getTicket().changeOwner(auction.getBidder());
-		// }
-
-		auctionBidRedisUtil.deleteBidKey(auction.getId());
-		auctionDetailRedisUtil.deleteAuctionDetail(auction.getId());
+		for (Auction auction : auctions) {
+			auctionBidRedisUtil.deleteBidKey(auction.getId());
+			auctionDetailRedisUtil.deleteAuctionDetail(auction.getId());
+		}
 	}
 
 	/*
@@ -251,16 +256,28 @@ public class AuctionService {
 		List<Long> ticketIds = ticketClient.getTickets(gameId).stream().map(TicketDto::getId).toList();
 		List<Auction> auctions = auctionRepository.findAllByTicketIdIn(ticketIds);
 
-		if (auctions.isEmpty()) {
-			return;
-		}
+		List<RefundDto> refundList = auctions.stream()
+			.filter(Auction::hasBidder)
+			.map(auction -> new RefundDto(
+				auction.getBidderId(),
+				auction.getBidPoint().longValue()
+			))
+			.toList();
 
-		for (Auction auction : auctions) {
-			expireAuction(auction);
+		List<RecoveryDto> recoveryList = auctions.stream()
+			.filter(Auction::hasBidder)
+			.filter(Auction::isExpired)
+			.map(auction -> new RecoveryDto(
+				auction.getSellerId(),
+				auction.getBidPoint().longValue()
+			))
+			.toList();
 
-			// // 티켓 원래 주인 경매금액 뺏기
-			// pointService.decreasePoint(auction.getSeller().getId(), auction.getBidPoint(), PointHistoryType.REFUND);
-		}
+		pointQueueService.enqueueRefundAuction(refundList);
+		pointQueueService.enqueueRecoveryAuction(recoveryList);
+
+		List<Auction> inProgressAuctions = auctions.stream().filter(Auction::isInProgress).toList();
+		expireAuction(inProgressAuctions);
 	}
 
 	// 경매 종료 스케쥴러
@@ -268,19 +285,31 @@ public class AuctionService {
 	@Transactional
 	public void closeExpiredAuctions() {
 		Pageable pageable = PageRequest.of(0, CHUNK_SIZE);
-
 		LocalDateTime standardTime = LocalDateTime.now().minusHours(24);
-
-		Page<Auction> expiredAuctions = auctionRepository.findAllByDeletedAtIsNullAndCreatedAtBetween(
+		Page<Auction> auctions = auctionRepository.findAllByDeletedAtIsNullAndCreatedAtBetween(
 			standardTime.minusMinutes(60), standardTime, pageable
 		);
+		if (auctions.isEmpty()) { return; }
 
-		if (expiredAuctions.isEmpty()) {
-			return;
-		}
+		List<RefundDto> refundList = auctions.stream()
+			.filter(Auction::hasBidder)
+			.map(auction -> new RefundDto(
+				auction.getSellerId(),
+				auction.getBidPoint().longValue()
+			))
+			.toList();
+		pointQueueService.enqueueRefundAuction(refundList);
 
-		for (Auction auction : expiredAuctions.getContent()) {
-			expireAuction(auction);
-		}
+		List<TicketChangeOwnerDto> ticketChangeOwnerList = auctions.stream()
+			.filter(Auction::hasBidder)
+			.map(auction -> new TicketChangeOwnerDto(
+				auction.getTicketId(),
+				auction.getBidderId(),
+				auction.getBidPoint().longValue()
+			))
+			.toList();
+		ticketQueueService.enqueueTicketChangeOwner(ticketChangeOwnerList);
+
+		expireAuction(auctions.getContent());
 	}
 }

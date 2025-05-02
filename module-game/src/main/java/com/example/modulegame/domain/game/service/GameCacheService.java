@@ -29,8 +29,6 @@ public class GameCacheService {
     private final SeatService seatService;
     private final GameGrpcClientService gameGrpcClientService;
 
-
-
     @Cacheable(value = "seatCountsBySectionType", key = "#gameId")
     public List<SectionTypeSeatCountResponse> getSeatCountsByTypeCached(Long gameId) {
         log.info("💡 캐시 미적중! DB에서 seat count 조회 - gameId: {}", gameId);

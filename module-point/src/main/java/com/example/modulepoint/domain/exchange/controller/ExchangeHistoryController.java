@@ -20,14 +20,14 @@ public class ExchangeHistoryController {
 
 	private final ExchangeHistoryService exchangeHistoryService;
 
-	@PatchMapping("/v1/admin/exchangeHistory/{exchangeHistoryId}/exchange")
+	@PatchMapping("/v1/admin/exchangeHistories/{exchangeHistoryId}/exchange")
 	public ResponseEntity<ExchangeResponse> exchangePoint(
 		@PathVariable Long exchangeHistoryId
 	) {
 		return ResponseEntity.ok(exchangeHistoryService.exchangePoint(exchangeHistoryId));
 	}
 
-	@GetMapping("/v1/admin/exchangeHistory/{exchangeHistoryId}")
+	@GetMapping("/v1/admin/exchangeHistories/{exchangeHistoryId}")
 	public ResponseEntity<ExchangeHistoryResponse> getExchangeHistory(
 		@PathVariable Long exchangeHistoryId
 	) {

@@ -14,6 +14,7 @@ public enum PointHistoryType {
 	BID,
 	BID_REFUND,
 	SELL,
+	RECOVERY,
 	REFUND,
 	FILL,
 	EXCHANGE_REQUEST,

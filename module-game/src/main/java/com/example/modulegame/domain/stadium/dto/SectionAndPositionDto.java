@@ -3,7 +3,6 @@ package com.example.modulegame.domain.stadium.dto;
 import java.util.List;
 
 import com.example.modulegame.domain.stadium.entity.Seat;
-import com.example.modulegame.domain.stadium.entity.Section;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -75,7 +75,7 @@ jobs:
           }
 
           # 공통 코드 변경 확인
-          if echo "$CHANGED_FILES" | grep -q "module-common/\|build.gradle\|settings.gradle"; then
+          if echo "$CHANGED_FILES" | grep -q "build.gradle\|settings.gradle"; then
             build_all_modules
           else
             for MODULE in "${MODULES[@]}"; do

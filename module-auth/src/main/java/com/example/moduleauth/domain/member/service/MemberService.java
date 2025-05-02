@@ -1,18 +1,16 @@
 package com.example.moduleauth.domain.member.service;
 
-import static com.example.modulecommon.exception.ErrorCode.INVALID_PASSWORD;
-import static com.example.modulecommon.exception.ErrorCode.PASSWORD_SAME_AS_OLD;
-import static com.example.modulecommon.exception.ErrorCode.USER_NOT_FOUND;
-
-import com.example.modulecommon.exception.ServerException;
 import com.example.moduleauth.domain.member.dto.request.DeleteMemberRequest;
 import com.example.moduleauth.domain.member.dto.request.UpdatePasswordRequest;
 import com.example.moduleauth.domain.member.entity.Member;
 import com.example.moduleauth.domain.member.repository.MemberRepository;
+import com.example.moduleauth.global.exception.ServerException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import static com.example.moduleauth.global.exception.ErrorCode.*;
 
 @RequiredArgsConstructor
 @Service

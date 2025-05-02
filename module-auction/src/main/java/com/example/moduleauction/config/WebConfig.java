@@ -1,6 +1,6 @@
 package com.example.moduleauction.config;
 
-import com.example.modulecommon.argumentresolver.AuthUserArgumentResolver;
+import com.example.moduleauction.config.argumentresolver.AuthUserArgumentResolver;
 import java.util.List;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;

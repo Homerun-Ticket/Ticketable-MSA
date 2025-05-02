@@ -1,5 +1,7 @@
 package com.example.modulepoint.domain.payment.controller;
 
+import com.example.modulepoint.global.annotation.LoginUser;
+import com.example.modulepoint.global.entity.AuthUser;
 import com.example.modulepoint.domain.payment.service.PointPaymentService;
 import com.siot.IamportRestClient.response.IamportResponse;
 import com.siot.IamportRestClient.response.Payment;
@@ -17,11 +19,11 @@ public class PointPaymentController {
 
 	private final PointPaymentService pointPaymentService;
 
-	@PostMapping("/v1/members/{memberId}/payments/{imp_uid}")
+	@PostMapping("/v1/payments/{imp_uid}")
 	public ResponseEntity<IamportResponse<Payment>> iamPortPayment(
-		@PathVariable Long memberId,
+		@LoginUser AuthUser authUser,
 		@PathVariable String imp_uid
 	) {
-		return ResponseEntity.ok(pointPaymentService.iamPortPayment(memberId, imp_uid));
+		return ResponseEntity.ok(pointPaymentService.iamPortPayment(authUser.getMemberId(), imp_uid));
 	}
 }

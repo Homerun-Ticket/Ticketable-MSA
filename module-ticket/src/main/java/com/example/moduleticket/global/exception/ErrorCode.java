@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 @AllArgsConstructor
 public enum ErrorCode {
+	UNKNOWN_ERROR("서버상태가 불안정합니다", HttpStatus.INTERNAL_SERVER_ERROR),
 
 	// 경기장
 	STADIUM_NOT_FOUND("해당하는 경기장을 찾을 수 없습니다.", NOT_FOUND),
@@ -44,6 +45,7 @@ public enum ErrorCode {
 	//예약
 	RESERVATION_NOT_FOUND("예약 내역이 존재하지않습니다.", BAD_REQUEST),
 	INVALID_RESERVATION_STATE("취소할 수 없는 예약입니다", BAD_REQUEST),
+	PROCESSING_RESERVATION_SEAT("예약 처리 중인 좌석입니다. 잠시 후 다시 확인해주세요", BAD_REQUEST),
 
 	//대기열
 	INVALID_WAITING_TOKEN("올바르지않은 대기열 토큰 입니다.", BAD_REQUEST),

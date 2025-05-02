@@ -1,12 +1,10 @@
 package com.example.moduleauction.domain.auction.service;
 
-import java.util.Comparator;
 import java.util.List;
 
 import com.example.moduleauction.domain.auction.entity.AuctionTicketInfo;
 import com.example.moduleauction.domain.auction.repository.AuctionTicketInfoRepository;
 import com.example.moduleauction.feign.dto.GameDto;
-import com.example.moduleauction.feign.dto.SectionAndPositionDto;
 import com.example.moduleauction.feign.dto.TicketDto;
 
 import lombok.RequiredArgsConstructor;

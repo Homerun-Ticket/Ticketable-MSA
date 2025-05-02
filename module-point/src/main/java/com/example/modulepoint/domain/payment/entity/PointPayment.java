@@ -1,6 +1,6 @@
 package com.example.modulepoint.domain.payment.entity;
 
-import com.example.modulecommon.entity.Timestamped;
+import com.example.modulepoint.global.entity.Timestamped;
 import com.example.modulepoint.domain.payment.enums.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.*;
@@ -13,7 +13,7 @@ public class PointPayment extends Timestamped {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	
+
 	@Column(unique = true)
 	private String impUid;
 

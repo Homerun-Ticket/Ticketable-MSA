@@ -1,7 +1,7 @@
 package com.example.modulepoint.domain.payment.service;
 
-import com.example.modulecommon.exception.ErrorCode;
-import com.example.modulecommon.exception.ServerException;
+import com.example.modulepoint.global.exception.ErrorCode;
+import com.example.modulepoint.global.exception.ServerException;
 import com.example.modulepoint.domain.payment.entity.PointPayment;
 import com.example.modulepoint.domain.payment.enums.PaymentStatus;
 import com.example.modulepoint.domain.payment.repository.PointPaymentRepository;

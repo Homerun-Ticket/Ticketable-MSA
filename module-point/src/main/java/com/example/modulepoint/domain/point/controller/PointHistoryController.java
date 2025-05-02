@@ -1,5 +1,7 @@
 package com.example.modulepoint.domain.point.controller;
 
+import com.example.modulepoint.global.annotation.LoginUser;
+import com.example.modulepoint.global.entity.AuthUser;
 import com.example.modulepoint.domain.point.dto.response.PointHistoryResponse;
 import com.example.modulepoint.domain.point.service.PointHistoryService;
 import lombok.RequiredArgsConstructor;
@@ -14,11 +16,11 @@ public class PointHistoryController {
 
 	private final PointHistoryService pointHistoryService;
 
-	@GetMapping("/v1/members/{memberId}/pointHistories")
+	@GetMapping("/v1/pointHistories")
 	public ResponseEntity<PagedModel<PointHistoryResponse>> getPointHistories(
-		@PathVariable Long memberId,
+		@LoginUser AuthUser authUser,
 		@RequestParam int page
 	) {
-		return ResponseEntity.ok(pointHistoryService.getPointHistories(memberId, page));
+		return ResponseEntity.ok(pointHistoryService.getPointHistories(authUser.getMemberId(), page));
 	}
 }

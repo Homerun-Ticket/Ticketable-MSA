@@ -1,7 +1,5 @@
 package com.example.moduleauction.domain.auction.entity;
 
-import com.example.modulecommon.entity.Timestamped;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

@@ -1,6 +1,6 @@
 package com.example.moduleauth.domain.member.entity;
 
-import com.example.modulecommon.entity.Timestamped;
+import com.example.moduleauth.global.entity.Timestamped;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

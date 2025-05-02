@@ -1,8 +1,8 @@
 package com.example.modulepoint.domain.exchange.entity;
 
-import com.example.modulecommon.entity.Timestamped;
-import com.example.modulecommon.exception.ErrorCode;
-import com.example.modulecommon.exception.ServerException;
+import com.example.modulepoint.global.entity.Timestamped;
+import com.example.modulepoint.global.exception.ErrorCode;
+import com.example.modulepoint.global.exception.ServerException;
 import com.example.modulepoint.domain.exchange.enums.ExchangeHistoryType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;

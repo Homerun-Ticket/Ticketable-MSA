@@ -1,12 +1,14 @@
 package com.example.moduleauth.common.role;
 
-import static com.example.modulecommon.exception.ErrorCode.INVALID_USER_ROLE;
-
-import com.example.modulecommon.exception.ServerException;
 import java.util.Arrays;
+
+import com.example.moduleauth.global.exception.ErrorCode;
+import com.example.moduleauth.global.exception.ServerException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
+
+
 
 @Getter
 @RequiredArgsConstructor
@@ -21,7 +23,7 @@ public enum MemberRole implements GrantedAuthority {
 		return Arrays.stream(MemberRole.values())
 			.filter(f -> f.name().equalsIgnoreCase(role))
 			.findFirst()
-			.orElseThrow(() -> new ServerException(INVALID_USER_ROLE));
+			.orElseThrow(() -> new ServerException(ErrorCode.INVALID_USER_ROLE));
 	}
 	
 	@Override

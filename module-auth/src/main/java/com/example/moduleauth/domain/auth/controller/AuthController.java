@@ -4,13 +4,12 @@ import com.example.moduleauth.domain.auth.dto.request.LoginRequest;
 import com.example.moduleauth.domain.auth.dto.request.SignupRequest;
 import com.example.moduleauth.domain.auth.dto.response.AuthResponse;
 import com.example.moduleauth.domain.auth.service.AuthService;
+import io.jsonwebtoken.Claims;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@Slf4j
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api")
@@ -28,14 +27,21 @@ public class AuthController {
 		return ResponseEntity.ok(authService.login(request));
 	}
 	
+	@PostMapping("/v2/auth/login")
+	public ResponseEntity<AuthResponse> loginV2(@Valid @RequestBody LoginRequest request) {
+		return ResponseEntity.ok(authService.loginV2(request));
+	}
+	
 	@PostMapping("/v1/auth/validate")
 	public ResponseEntity<Void> validateToken(
 		@RequestHeader("Authorization") String authToken,
 		@RequestParam(required = false) String requiredRole
 	) {
-		log.info("토큰 검증 진입 성공");
-		log.info("requiredRole : {}", requiredRole);
-		authService.validateToken(authToken, requiredRole);
-		return ResponseEntity.ok().build();
+		Claims claims = authService.validateToken(authToken, requiredRole);
+		
+		return ResponseEntity.ok()
+			.header("memberId", claims.getSubject())
+			.header("role", claims.get("role", String.class))
+			.build();
 	}
 }

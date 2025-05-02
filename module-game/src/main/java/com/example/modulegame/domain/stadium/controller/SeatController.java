@@ -53,18 +53,6 @@ public class SeatController {
         return ResponseEntity.ok().build();
     }
 
-    // 좌석 선점
-    @PostMapping("/v1/seats/hold")
-    public ResponseEntity<String> holdSeat(
-//        @AuthenticationPrincipal Auth auth,
-//        @RequestBody SeatHoldRequest seatHoldRequest
-    ) {
-//        seatService.holdSeat(auth, seatHoldRequest);
-//        log.debug("사용자 : {} , 좌석 : {} 선점완료", auth.getId(), seatHoldRequest.getSeatIds());
-
-        return ResponseEntity.ok("모든 좌석 선점 성공, 15분안에 결제를 완료해주세요");
-    }
-
     @GetMapping("/internal/seats/by-section")
     public ResponseEntity<List<SeatDetailDto>> getSeatsByGameAndSection(
         @RequestParam Long gameId,

@@ -2,8 +2,6 @@ package com.example.modulegame.domain.stadium.service;
 
 
 import java.util.UUID;
-
-import com.example.modulecommon.exception.ErrorCode;
 import com.example.modulegame.common.image.ImageService;
 import com.example.modulegame.domain.stadium.dto.request.StadiumCreateRequest;
 import com.example.modulegame.domain.stadium.dto.request.StadiumUpdateRequest;
@@ -11,11 +9,12 @@ import com.example.modulegame.domain.stadium.dto.response.StadiumCreateResponse;
 import com.example.modulegame.domain.stadium.dto.response.StadiumUpdateResponse;
 import com.example.modulegame.domain.stadium.entity.Stadium;
 import com.example.modulegame.domain.stadium.repository.StadiumRepository;
+import com.example.modulegame.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import com.example.modulecommon.exception.ServerException;
+import com.example.modulegame.global.exception.ServerException;
 
 @Service
 @RequiredArgsConstructor
@@ -49,7 +48,6 @@ public class StadiumService {
             throw e;
         }
     }
-
 
     @Transactional
     public StadiumUpdateResponse updateStadium(Long stadiumId, StadiumUpdateRequest request) {

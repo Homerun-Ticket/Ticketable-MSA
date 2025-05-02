@@ -1,6 +1,6 @@
 package com.example.moduleauction.domain.auction.controller;
 
-import static com.example.modulecommon.util.PageUtil.correctPageIndex;
+import static com.example.moduleauction.util.PageUtil.correctPageIndex;
 
 import com.example.moduleauction.domain.auction.dto.request.AuctionBidRequest;
 import com.example.moduleauction.domain.auction.dto.request.AuctionCreateRequest;
@@ -8,8 +8,8 @@ import com.example.moduleauction.domain.auction.dto.request.AuctionSearchConditi
 import com.example.moduleauction.domain.auction.dto.response.AuctionBidResponse;
 import com.example.moduleauction.domain.auction.dto.response.AuctionResponse;
 import com.example.moduleauction.domain.auction.service.AuctionService;
-import com.example.modulecommon.annotation.LoginUser;
-import com.example.modulecommon.entity.AuthUser;
+import com.example.moduleauction.config.annotation.LoginUser;
+import com.example.moduleauction.domain.auction.entity.AuthUser;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -78,5 +78,12 @@ public class AuctionController {
 		auctionService.deleteAuction(authUser, auctionId);
 		return ResponseEntity.ok().build();
 	}
+
+	@DeleteMapping("/auctions/game/{gameId}")
+	void deleteAllAuctionsByCanceledGame(
+		@PathVariable("gameId") Long gameId
+	) {
+		auctionService.deleteAllAuctionsByCanceledGame(gameId);
+	};
 
 }

@@ -1,6 +1,5 @@
 package com.example.moduleauction.domain.auction.entity;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Entity;

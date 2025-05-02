@@ -1,6 +1,7 @@
 package com.example.moduleticket.util;
 
 
+import static com.example.moduleticket.global.exception.ErrorCode.PROCESSING_RESERVATION_SEAT;
 import static com.example.moduleticket.global.exception.ErrorCode.SEAT_HOLD_EXPIRED;
 import static com.example.moduleticket.global.exception.ErrorCode.TICKET_ALREADY_RESERVED;
 
@@ -32,7 +33,7 @@ public class SeatHoldRedisUtil {
 		Long execute = redisTemplate.execute(holdSeatRedisScript, keys, value, SEAT_HOLD_TTL_STRING);
 
 		if(execute == null || execute.equals(0L)) {
-			throw new ServerException(TICKET_ALREADY_RESERVED);
+			throw new ServerException(PROCESSING_RESERVATION_SEAT);
 		}
 	}
 

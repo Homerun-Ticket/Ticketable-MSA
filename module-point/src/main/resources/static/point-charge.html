@@ -17,8 +17,8 @@
         const amount = +$('#chargeAmount').val();
         if(!amount||amount<1000) return alert('1000원 이상 입력');
 
-        const userId = localStorage.getItem('userId'),
-            token  = localStorage.getItem('authToken');
+        const userId = localStorage.getItem('userId');
+        const token  = localStorage.getItem('authToken');
         if(!userId||!token) return alert('로그인 후 이용하세요');
 
         IMP.request_pay({
@@ -32,7 +32,7 @@
             if(rsp.success){
                 $.ajax({
                     type: 'POST',
-                    url: `http://localhost:8086/api/v1/members/${userId}/payments/${rsp.imp_uid}`,
+                    url: `http://localhost:8086/api/v1/payments/${rsp.imp_uid}`,
                     headers: { 'Authorization': `Bearer ${token}` },
                 })
                     .done(function(res){

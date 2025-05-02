@@ -1,10 +1,7 @@
 package com.example.modulegame.domain.stadium.service;
 
-
-import static com.example.modulecommon.exception.ErrorCode.SEAT_NOT_FOUND;
-
-import com.example.modulecommon.exception.ErrorCode;
-import com.example.modulecommon.exception.ServerException;
+import com.example.modulegame.global.exception.ErrorCode;
+import com.example.modulegame.global.exception.ServerException;
 import com.example.modulegame.domain.game.dto.SeatDetailDto;
 import com.example.modulegame.domain.stadium.dto.SectionAndPositionDto;
 import com.example.modulegame.domain.stadium.dto.request.SeatCreateRequest;
@@ -14,28 +11,23 @@ import com.example.modulegame.domain.stadium.dto.response.SeatUpdateResponse;
 import com.example.modulegame.domain.stadium.entity.Seat;
 import com.example.modulegame.domain.stadium.entity.Section;
 import com.example.modulegame.domain.stadium.repository.SeatRepository;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.example.modulegame.global.exception.ErrorCode.SEAT_NOT_FOUND;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class SeatService {
-    // CRUD
     private final SeatRepository seatRepository;
 
     private final SectionService sectionService;
-
-//    private final SeatHoldRedisUtil seatHoldRedisUtil;
-//
-//    private final TicketSeatService ticketSeatService;
-//
-//    private final SeatValidator seatValidator;
 
     @Transactional
     public List<SeatCreateResponse> createSeats(Long sectionId, SeatCreateRequest request) {

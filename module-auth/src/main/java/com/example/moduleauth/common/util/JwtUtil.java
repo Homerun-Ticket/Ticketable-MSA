@@ -1,9 +1,7 @@
 package com.example.moduleauth.common.util;
 
-import static com.example.modulecommon.exception.ErrorCode.INVALID_TOKEN;
-
 import com.example.moduleauth.common.role.MemberRole;
-import com.example.modulecommon.exception.ServerException;
+import com.example.moduleauth.global.exception.ServerException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -16,6 +14,8 @@ import org.springframework.util.StringUtils;
 import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
+
+import static com.example.moduleauth.global.exception.ErrorCode.INVALID_TOKEN;
 
 
 @Component

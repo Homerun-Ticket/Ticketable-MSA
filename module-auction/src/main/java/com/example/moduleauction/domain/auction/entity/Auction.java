@@ -1,6 +1,5 @@
 package com.example.moduleauction.domain.auction.entity;
 
-import com.example.modulecommon.entity.Timestamped;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -60,7 +59,7 @@ public class Auction extends Timestamped {
 		this.bidderId = bidderId;
 	}
 
-	public void setDeletedAt() {
+	public void softDelete() {
 		if (this.deletedAt == null) {
 			this.deletedAt = LocalDateTime.now();
 		}
@@ -76,7 +75,7 @@ public class Auction extends Timestamped {
 	}
 
 	public boolean isTimeOver() {
-		return this.getCreatedAt().plusHours(24).isBefore(LocalDateTime.now());
+		return this.getCreatedAt().plusHours(24).isBefore(LocalDateTime.now()) && this.deletedAt == null;
 	}
 
 	public boolean isSameSellerAndBidder(Long bidderId) {
@@ -101,4 +100,8 @@ public class Auction extends Timestamped {
 		}
 		return this.bidderId.equals(bidderId);
 	}
+
+	public boolean isExpired() { return this.deletedAt != null; }
+
+	public boolean isInProgress() { return this.deletedAt == null; }
 }

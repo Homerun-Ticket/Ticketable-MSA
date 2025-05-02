@@ -4,18 +4,18 @@ import com.example.moduleauth.domain.auth.dto.request.LoginRequest;
 import com.example.moduleauth.domain.auth.dto.request.SignupRequest;
 import com.example.moduleauth.domain.auth.dto.response.AuthResponse;
 import com.example.moduleauth.feign.PointService;
-import com.example.modulecommon.exception.ServerException;
 import com.example.moduleauth.common.role.MemberRole;
 import com.example.moduleauth.common.util.JwtUtil;
 import com.example.moduleauth.domain.member.entity.Member;
 import com.example.moduleauth.domain.member.repository.MemberRepository;
+import com.example.moduleauth.global.exception.ServerException;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.example.modulecommon.exception.ErrorCode.*;
+import static com.example.moduleauth.global.exception.ErrorCode.*;
 
 @RequiredArgsConstructor
 @Service
@@ -54,9 +54,26 @@ public class AuthService {
 		);
 		return new AuthResponse(accessToken);
 	}
-
+	
 	@Transactional
 	public AuthResponse login(LoginRequest request) {
+		Member findMember = memberRepository.findByEmail(request.getEmail())
+			.orElseThrow(() -> new ServerException(USER_NOT_FOUND));
+		
+		if (!passwordEncoder.matches(request.getPassword(), findMember.getPassword())) {
+			throw new ServerException(INVALID_PASSWORD);
+		}
+		
+		MemberRole memberRole = MemberRole.of(findMember.getRole());
+		
+		String accessToken = jwtUtil.createAccessToken(
+			findMember.getId(), findMember.getEmail(), findMember.getName(), memberRole
+		);
+		return new AuthResponse(accessToken);
+	}
+
+	@Transactional
+	public AuthResponse loginV2(LoginRequest request) {
 		if (!reCaptchaService.isValid(request.getRecaptchaToken())) {
 			throw new ServerException(INVALID_RECAPTCHA_TOKEN);
 		}
@@ -77,7 +94,7 @@ public class AuthService {
 	}
 	
 	@Transactional
-	public void validateToken(String authToken, String requiredRole) {
+	public Claims validateToken(String authToken, String requiredRole) {
 		String token = jwtUtil.substringToken(authToken);
 		
 		Claims claims = jwtUtil.extractClaims(token);
@@ -94,5 +111,6 @@ public class AuthService {
 		if (requiredRole != null && !requiredRole.isEmpty() && !requiredRole.equals(role)) {
 			throw new ServerException(USER_ACCESS_DENIED);
 		}
+		return claims;
 	}
 }

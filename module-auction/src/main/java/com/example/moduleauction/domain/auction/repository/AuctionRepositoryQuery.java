@@ -1,7 +1,6 @@
 package com.example.moduleauction.domain.auction.repository;
 
 import com.example.moduleauction.domain.auction.dto.request.AuctionSearchCondition;
-import com.example.moduleauction.domain.auction.entity.Auction;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

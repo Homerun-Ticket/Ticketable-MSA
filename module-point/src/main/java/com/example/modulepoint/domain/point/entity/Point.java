@@ -1,8 +1,8 @@
 package com.example.modulepoint.domain.point.entity;
 
-import static com.example.modulecommon.exception.ErrorCode.NOT_ENOUGH_POINT;
+import static com.example.modulepoint.global.exception.ErrorCode.NOT_ENOUGH_POINT;
 
-import com.example.modulecommon.exception.ServerException;
+import com.example.modulepoint.global.exception.ServerException;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;

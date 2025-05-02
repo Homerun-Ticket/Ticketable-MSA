@@ -1,7 +1,6 @@
 package com.example.modulegame.domain.game.service;
 
-import com.example.modulecommon.exception.ErrorCode;
-import com.example.modulecommon.exception.ServerException;
+
 import com.example.modulegame.common.image.ImageService;
 import com.example.modulegame.domain.game.dto.GameDto;
 import com.example.modulegame.domain.game.dto.request.GameCreateRequest;
@@ -19,6 +18,8 @@ import com.example.modulegame.domain.stadium.entity.Stadium;
 import com.example.modulegame.domain.stadium.service.StadiumService;
 import com.example.modulegame.feign.client.AuctionClient;
 import com.example.modulegame.feign.client.TicketClient;
+import com.example.modulegame.global.exception.ErrorCode;
+import com.example.modulegame.global.exception.ServerException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

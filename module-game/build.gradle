@@ -30,8 +30,7 @@ dependencyManagement {
 
 
 dependencies {
-    implementation project(':module-common')
-
+    testImplementation 'com.h2database:h2'  // H2 테스트 전용으로 변경
     // AWS S3
     implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
 

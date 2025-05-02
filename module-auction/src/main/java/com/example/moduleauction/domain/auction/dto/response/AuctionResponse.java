@@ -1,7 +1,6 @@
 package com.example.moduleauction.domain.auction.dto.response;
 
 import com.example.moduleauction.domain.auction.dto.AuctionDetailDto;
-import com.example.moduleauction.domain.auction.entity.Auction;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

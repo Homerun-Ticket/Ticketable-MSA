@@ -1,10 +1,10 @@
 package com.example.moduleauction.domain.auction.service;
 
 
-import static com.example.modulecommon.exception.ErrorCode.INVALID_BIDDING_AMOUNT;
+import static com.example.moduleauction.config.exception.ErrorCode.INVALID_BIDDING_AMOUNT;
 import static com.example.moduleauction.domain.auction.service.AuctionService.BID_UNIT;
 
-import com.example.modulecommon.exception.ServerException;
+import com.example.moduleauction.config.exception.ServerException;
 import com.example.moduleauction.domain.auction.dto.request.AuctionBidRequest;
 import com.example.moduleauction.domain.auction.entity.Auction;
 import com.example.moduleauction.domain.auction.entity.AuctionHistory;

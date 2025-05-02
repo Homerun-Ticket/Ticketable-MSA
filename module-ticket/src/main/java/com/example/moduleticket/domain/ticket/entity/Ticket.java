@@ -46,8 +46,4 @@ public class Ticket extends Timestamped {
 	public void cancel() {
 		deletedAt = LocalDateTime.now();
 	}
-
-	public void changeOwner(Long targetMember) {
-		this.memberId = targetMember;
-	}
 }

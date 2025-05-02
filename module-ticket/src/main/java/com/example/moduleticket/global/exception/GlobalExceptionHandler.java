@@ -1,25 +1,28 @@
 package com.example.moduleticket.global.exception;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
-import com.example.moduleticket.global.exception.ServerException;
-import com.example.moduleticket.global.exception.ErrorCode;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import java.util.HashMap;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 	
 	@ExceptionHandler(ServerException.class)
 	public ResponseEntity<ErrorResponse> responseStatusExceptionException(ServerException e) {
+		log.error(e.getMessage(), e);
 		ErrorCode errorCode = e.getErrorCode();
 		String status = errorCode.getStatus().toString();
-		String message = errorCode.getMessage();
+		String message = e.getMessage();
 		String code = errorCode.name();
 		ErrorResponse response = new ErrorResponse(status, message, code);
 		return ResponseEntity.status(errorCode.getStatus()).body(response);
@@ -39,5 +42,17 @@ public class GlobalExceptionHandler {
 			fieldErrors );
 
 		return ResponseEntity.status(BAD_REQUEST).body(response);
+	}
+
+	@ExceptionHandler(CallNotPermittedException.class)
+	public ResponseEntity<ErrorResponse> callNotPermittedException(CallNotPermittedException ex) {
+		HttpStatus status = INTERNAL_SERVER_ERROR;
+		String message = ErrorCode.UNKNOWN_ERROR.getMessage();
+		ErrorResponse response = new ErrorResponse(
+			status.name(),
+			message,
+			String.valueOf(status.value()),
+			null );
+		return ResponseEntity.status(status).body(response);
 	}
 }

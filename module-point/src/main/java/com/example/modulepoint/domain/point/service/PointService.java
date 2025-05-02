@@ -1,12 +1,13 @@
 package com.example.modulepoint.domain.point.service;
 
-import static com.example.modulecommon.exception.ErrorCode.CAN_NOT_EXCHANGE;
-import static com.example.modulecommon.exception.ErrorCode.EXCHANGE_WAITING;
-import static com.example.modulecommon.exception.ErrorCode.NOT_ENOUGH_POINT;
-import static com.example.modulecommon.exception.ErrorCode.USER_NOT_FOUND;
+import static com.example.modulepoint.global.exception.ErrorCode.CAN_NOT_EXCHANGE;
+import static com.example.modulepoint.global.exception.ErrorCode.EXCHANGE_WAITING;
+import static com.example.modulepoint.global.exception.ErrorCode.NOT_ENOUGH_POINT;
+import static com.example.modulepoint.global.exception.ErrorCode.USER_NOT_FOUND;
 import static com.example.modulepoint.domain.exchange.enums.ExchangeHistoryType.EXCHANGE_REQUEST;
 
-import com.example.modulecommon.exception.ServerException;
+import com.example.modulepoint.domain.point.dto.request.ChargePointRequest;
+import com.example.modulepoint.global.exception.ServerException;
 import com.example.modulepoint.domain.exchange.service.ExchangeHistoryService;
 import com.example.modulepoint.domain.point.dto.request.ExchangePointRequest;
 import com.example.modulepoint.domain.point.dto.response.PointResponse;
@@ -87,6 +88,14 @@ public class PointService {
 
 		point.minusPoint(charge);
 		pointHistoryService.createPointHistory(charge, type, memberId);
+	}
+	
+	@Transactional
+	public PointResponse chargePoint(Long memberId, ChargePointRequest request) {
+		Point point = getPoint(memberId);
+		
+		point.plusPoint(request.getPoint());
+		return PointResponse.of(point);
 	}
 
 	/**
