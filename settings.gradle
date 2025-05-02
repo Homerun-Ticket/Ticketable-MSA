@@ -1,9 +1,6 @@
 rootProject.name = 'multi-test'
-<<<<<<< HEAD
+
 include ':module-eureka'
-include ':module-common'
-=======
->>>>>>> e31ba36aa69e3ec0abc1468c7bf58b636184e7ca
 include ':module-ticket'
 include ':module-auth'
 include ':module-game'
