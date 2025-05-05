@@ -32,6 +32,11 @@ public class GateWayController {
 	private final ApplicationEventPublisher publisher;
 	private final GateWayQueueService gateWayQueueService;
 
+	@GetMapping("/health")
+	public String health() {
+		return "OK";
+	}
+
 	@PostMapping("/admin/routes")
 	public Mono<Void> addRoute(@RequestBody RouteCreateRequest routeCreateRequest) {
 		return routeDefinitionLocator.getRouteDefinitions()
