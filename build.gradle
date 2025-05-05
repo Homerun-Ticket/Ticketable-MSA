@@ -19,7 +19,7 @@ repositories {
     mavenCentral()
 }
 
-// 테스트
+// 테스트1
 subprojects {
 
     apply plugin: 'java'
