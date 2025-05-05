@@ -11,33 +11,6 @@ spring:
       port: ${REDIS_PORT:6379}
       client-name: ${REDIS_USER:default}
       password: ${REDIS_PASSWORD:1234}
-  cloud:
-    gateway:
-      routes:
-        - id: auth_route
-          uri: lb://module-auth
-          predicates:
-            - Path=/auth/**
-        - id: auction_route
-          uri: lb://module-auction
-          predicates:
-            - Path=/auction/**
-        - id: game_route
-          uri: lb://module-game
-          predicates:
-            - Path=/game/**
-        - id: ticket_route
-          uri: lb://module-ticket
-          predicates:
-            - Path=/ticket/**
-        - id: waiting_route
-          uri: lb://module-waiting
-          predicates:
-            - Path=/waiting/**
-        - id: point_route
-          uri: lb://module-point
-          predicates:
-            - Path=/point/**
 
 server:
   port: 8080
