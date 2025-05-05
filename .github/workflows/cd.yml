@@ -104,11 +104,13 @@ jobs:
               sudo systemctl enable docker
               sudo usermod -aG docker $USER
             fi
+            
+            newgrp docker || true
 
             # 기존 컨테이너 제거 및 새 이미지 배포
-            docker rm -f module-eureka || true
-            docker pull ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-eureka-$SHORT_SHA
-            docker run -d --name module-eureka --network host -p 8761:8761 \
+            sudo docker rm -f module-eureka || true
+            sudo docker pull ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-eureka-$SHORT_SHA
+            sudo docker run -d --name module-eureka --network host -p 8761:8761 \
               -e SPRING_PROFILES_ACTIVE=prod \
               ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-eureka-$SHORT_SHA
             
