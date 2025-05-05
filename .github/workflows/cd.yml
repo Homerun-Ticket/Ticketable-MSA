@@ -108,6 +108,9 @@ jobs:
             fi
             
             newgrp docker || true
+            
+            # ECR 로그인 시도 추가
+            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | sudo docker login --username AWS --password-stdin ${{ secrets.AWS_REGISTRY }}
 
             # 기존 컨테이너 제거 및 새 이미지 배포
             sudo docker rm -f module-eureka || true
@@ -196,6 +199,9 @@ jobs:
             fi
             
             newgrp docker || true
+            
+            # ECR 로그인 시도 추가
+            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | sudo docker login --username AWS --password-stdin ${{ secrets.AWS_REGISTRY }}
 
             # 기존 컨테이너 제거 및 새 이미지 배포
             sudo docker rm -f module-auth || true
@@ -298,6 +304,9 @@ jobs:
             fi
             
             newgrp docker || true
+            
+            # ECR 로그인 시도 추가
+            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | sudo docker login --username AWS --password-stdin ${{ secrets.AWS_REGISTRY }}
 
             # 기존 컨테이너 제거 및 새 이미지 배포
             sudo docker rm -f module-auction || true
@@ -402,6 +411,9 @@ jobs:
             fi
             
             newgrp docker || true
+            
+            # ECR 로그인 시도 추가
+            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | sudo docker login --username AWS --password-stdin ${{ secrets.AWS_REGISTRY }}
 
             # 기존 컨테이너 제거 및 새 이미지 배포
             sudo docker rm -f module-game || true
@@ -506,6 +518,9 @@ jobs:
             fi
             
             newgrp docker || true
+            
+            # ECR 로그인 시도 추가
+            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | sudo docker login --username AWS --password-stdin ${{ secrets.AWS_REGISTRY }}
 
             # 기존 컨테이너 제거 및 새 이미지 배포
             sudo docker rm -f module-gateway || true
@@ -599,6 +614,9 @@ jobs:
             fi
             
             newgrp docker || true
+            
+            # ECR 로그인 시도 추가
+            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | sudo docker login --username AWS --password-stdin ${{ secrets.AWS_REGISTRY }}
 
             # 기존 컨테이너 제거 및 새 이미지 배포
             sudo docker rm -f module-point || true
@@ -697,6 +715,9 @@ jobs:
             fi
             
             newgrp docker || true
+            
+            # ECR 로그인 시도 추가
+            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | sudo docker login --username AWS --password-stdin ${{ secrets.AWS_REGISTRY }}
 
             # 기존 컨테이너 제거 및 새 이미지 배포
             sudo docker rm -f module-ticket || true
@@ -801,6 +822,9 @@ jobs:
             fi
             
             newgrp docker || true
+            
+            # ECR 로그인 시도 추가
+            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | sudo docker login --username AWS --password-stdin ${{ secrets.AWS_REGISTRY }}
 
             # 기존 컨테이너 제거 및 새 이미지 배포
             sudo docker rm -f module-waiting || true
