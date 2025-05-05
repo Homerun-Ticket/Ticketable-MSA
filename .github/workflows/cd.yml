@@ -442,7 +442,7 @@ jobs:
   deploy-gateway:
     runs-on: ubuntu-latest
     needs: [get-changed-files, deploy-eureka, deploy-auth, deploy-game, deploy-ticket, deploy-auction, deploy-point, deploy-waiting]
-    if: contains(needs.get-changed-files.outputs.changed_files, 'module-gateway/') || contains(needs.get-changed-files.outputs.changed_files, 'build.gradle') || contains(needs.get-changed-files.outputs.changed_files, 'settings.gradle')
+    if: contains(needs.get-changed-files.outputs.changed_files, '/module-gateway/') || contains(needs.get-changed-files.outputs.changed_files, 'build.gradle') || contains(needs.get-changed-files.outputs.changed_files, 'settings.gradle')
     steps:
       - name: Checkout
         uses: actions/checkout@v4
