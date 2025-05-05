@@ -27,6 +27,12 @@ jobs:
             module-*/**
             build.gradle
             settings.gradle
+        # 디버깅 로그 추가
+      - name: Debug changed files
+        run: |
+          echo "All changed files: ${{ steps.changed-files.outputs.all_changed_files }}"
+          echo "Any changed: ${{ steps.changed-files.outputs.any_changed }}"
+          echo "Any modified: ${{ steps.changed-files.outputs.any_modified }}"
             
 
   deploy-eureka:
@@ -442,7 +448,7 @@ jobs:
   deploy-gateway:
     runs-on: ubuntu-latest
     needs: [get-changed-files, deploy-eureka, deploy-auth, deploy-game, deploy-ticket, deploy-auction, deploy-point, deploy-waiting]
-    if: contains(needs.get-changed-files.outputs.changed_files, '/module-gateway/') || contains(needs.get-changed-files.outputs.changed_files, 'build.gradle') || contains(needs.get-changed-files.outputs.changed_files, 'settings.gradle')
+    if: contains(needs.get-changed-files.outputs.changed_files, 'module-gateway/') || contains(needs.get-changed-files.outputs.changed_files, 'build.gradle') || contains(needs.get-changed-files.outputs.changed_files, 'settings.gradle')
     steps:
       - name: Checkout
         uses: actions/checkout@v4
