@@ -106,6 +106,9 @@ jobs:
             fi
             
             newgrp docker || true
+            
+            # ECR 로그인
+            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | sudo docker login --username AWS --password-stdin ${{ secrets.AWS_REGISTRY }}
 
             # 기존 컨테이너 제거 및 새 이미지 배포
             sudo docker rm -f module-eureka || true
