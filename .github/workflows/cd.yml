@@ -37,7 +37,8 @@ jobs:
 
   deploy-eureka:
     runs-on: ubuntu-latest
-    if: contains(github.event.push.changed_files, 'module-eureka/') || contains(github.event.push.changed_files, 'build.gradle') || contains(github.event.push.changed_files, 'settings.gradle')
+    needs: get-changed-files
+    if: contains(needs.get-changed-files.outputs.changed_files, 'module-eureka/') || contains(needs.get-changed-files.outputs.changed_files, 'build.gradle') || contains(needs.get-changed-files.outputs.changed_files, 'settings.gradle')
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -89,7 +90,7 @@ jobs:
           docker buildx build \
             --cache-from type=local,src=/tmp/.buildx-cache \
             --cache-to type=local,dest=/tmp/.buildx-cache \
-            -t $AWS_REGISTRY/repo-ticketable:prod-eureka-$SHORT_SHA \
+            -t $AWS_REGISTRY/repo-ticketable:eureka-$SHORT_SHA \
             --push -f module-eureka/Dockerfile .
 
       - name: Deploy to EC2
@@ -119,15 +120,15 @@ jobs:
 
             # 기존 컨테이너 제거 및 새 이미지 배포
             sudo docker rm -f module-eureka || true
-            sudo docker pull ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-eureka-$SHORT_SHA
+            sudo docker pull ${{ secrets.AWS_REGISTRY }}/repo-ticketable:eureka-$SHORT_SHA
             sudo docker run -d --name module-eureka --network host -p 8761:8761 \
-              -e SPRING_PROFILES_ACTIVE=prod \
-              ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-eureka-$SHORT_SHA
+              ${{ secrets.AWS_REGISTRY }}/repo-ticketable:eureka-$SHORT_SHA
             
 
   deploy-auth:
     runs-on: ubuntu-latest
-    if: contains(github.event.push.changed_files, 'module-auth/') || contains(github.event.push.changed_files, 'build.gradle') || contains(github.event.push.changed_files, 'settings.gradle')
+    needs: [get-changed-files]
+    if: contains(needs.get-changed-files.outputs.changed_files, 'module-auth/') || contains(needs.get-changed-files.outputs.changed_files, 'build.gradle') || contains(needs.get-changed-files.outputs.changed_files, 'settings.gradle')
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -179,7 +180,7 @@ jobs:
           docker buildx build \
             --cache-from type=local,src=/tmp/.buildx-cache \
             --cache-to type=local,dest=/tmp/.buildx-cache \
-            -t $AWS_REGISTRY/repo-ticketable:prod-auth-$SHORT_SHA \
+            -t $AWS_REGISTRY/repo-ticketable:auth-$SHORT_SHA \
             --push -f module-auth/Dockerfile .
 
       - name: Deploy to EC2
@@ -209,9 +210,8 @@ jobs:
 
             # 기존 컨테이너 제거 및 새 이미지 배포
             sudo docker rm -f module-auth || true
-            sudo docker pull ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-auth-$SHORT_SHA
+            sudo docker pull ${{ secrets.AWS_REGISTRY }}/repo-ticketable:auth-$SHORT_SHA
             sudo docker run -d --name module-auth --network host -p 8083:8083 \
-              -e SPRING_PROFILES_ACTIVE=prod \
               -e eureka.client.serviceUrl.defaultZone=${{ secrets.EUREKA_URL }} \
               -e DB_URL=${{ secrets.DB_URL }} \
               -e DB_USERNAME=${{ secrets.DB_USERNAME }} \
@@ -226,12 +226,13 @@ jobs:
               -e REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }} \
               -e JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }} \
               -e JWT_ACCESS_TOKEN=${{ secrets.JWT_ACCESS_TOKEN }} \
-              ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-auth-$SHORT_SHA
+              ${{ secrets.AWS_REGISTRY }}/repo-ticketable:auth-$SHORT_SHA
             
 
   deploy-auction:
     runs-on: ubuntu-latest
-    if: contains(github.event.push.changed_files, 'module-auction/') || contains(github.event.push.changed_files, 'build.gradle') || contains(github.event.push.changed_files, 'settings.gradle')
+    needs: [get-changed-files]
+    if: contains(needs.get-changed-files.outputs.changed_files, 'module-auction/') || contains(needs.get-changed-files.outputs.changed_files, 'build.gradle') || contains(needs.get-changed-files.outputs.changed_files, 'settings.gradle')
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -283,7 +284,7 @@ jobs:
           docker buildx build \
             --cache-from type=local,src=/tmp/.buildx-cache \
             --cache-to type=local,dest=/tmp/.buildx-cache \
-            -t $AWS_REGISTRY/repo-ticketable:prod-auction-$SHORT_SHA \
+            -t $AWS_REGISTRY/repo-ticketable:auction-$SHORT_SHA \
             --push -f module-auction/Dockerfile .
 
       - name: Deploy to EC2
@@ -313,9 +314,8 @@ jobs:
 
             # 기존 컨테이너 제거 및 새 이미지 배포
             sudo docker rm -f module-auction || true
-            sudo docker pull ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-auction-$SHORT_SHA
+            sudo docker pull ${{ secrets.AWS_REGISTRY }}/repo-ticketable:auction-$SHORT_SHA
             sudo docker run -d --name module-auction --network host -p 8084:8084 \
-              -e SPRING_PROFILES_ACTIVE=prod \
               -e eureka.client.serviceUrl.defaultZone=${{ secrets.EUREKA_URL }} \
               -e DB_URL=${{ secrets.DB_URL }} \
               -e DB_USERNAME=${{ secrets.DB_USERNAME }} \
@@ -332,12 +332,13 @@ jobs:
               -e REDIS_PORT=${{ secrets.REDIS_PORT }} \
               -e REDIS_USER=${{ secrets.REDIS_USER }} \
               -e REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }} \
-              ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-auction-$SHORT_SHA
+              ${{ secrets.AWS_REGISTRY }}/repo-ticketable:auction-$SHORT_SHA
             
 
   deploy-game:
     runs-on: ubuntu-latest
-    if: contains(github.event.push.changed_files, 'module-game/') || contains(github.event.push.changed_files, 'build.gradle') || contains(github.event.push.changed_files, 'settings.gradle')
+    needs: [get-changed-files]
+    if: contains(needs.get-changed-files.outputs.changed_files, 'module-game/') || contains(needs.get-changed-files.outputs.changed_files, 'build.gradle') || contains(needs.get-changed-files.outputs.changed_files, 'settings.gradle')
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -389,7 +390,7 @@ jobs:
           docker buildx build \
             --cache-from type=local,src=/tmp/.buildx-cache \
             --cache-to type=local,dest=/tmp/.buildx-cache \
-            -t $AWS_REGISTRY/repo-ticketable:prod-game-$SHORT_SHA \
+            -t $AWS_REGISTRY/repo-ticketable:game-$SHORT_SHA \
             --push -f module-game/Dockerfile .
 
       - name: Deploy to EC2
@@ -419,9 +420,8 @@ jobs:
 
             # 기존 컨테이너 제거 및 새 이미지 배포
             sudo docker rm -f module-game || true
-            sudo docker pull ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-game-$SHORT_SHA
+            sudo docker pull ${{ secrets.AWS_REGISTRY }}/repo-ticketable:game-$SHORT_SHA
             sudo docker run -d --name module-game --network host -p 8081:8081 \
-              -e SPRING_PROFILES_ACTIVE=prod \
               -e eureka.client.serviceUrl.defaultZone=${{ secrets.EUREKA_URL }} \
               -e DB_URL=${{ secrets.DB_URL }} \
               -e DB_USERNAME=${{ secrets.DB_USERNAME }} \
@@ -438,12 +438,13 @@ jobs:
               -e REDIS_PORT=${{ secrets.REDIS_PORT }} \
               -e REDIS_USER=${{ secrets.REDIS_USER }} \
               -e REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }} \
-              ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-game-$SHORT_SHA
+              ${{ secrets.AWS_REGISTRY }}/repo-ticketable:game-$SHORT_SHA
 
 
   deploy-gateway:
     runs-on: ubuntu-latest
-    if: contains(github.event.push.changed_files, 'module-gateway/') || contains(github.event.push.changed_files, 'build.gradle') || contains(github.event.push.changed_files, 'settings.gradle')
+    needs: [get-changed-files]
+    if: contains(needs.get-changed-files.outputs.changed_files, 'module-gateway/') || contains(needs.get-changed-files.outputs.changed_files, 'build.gradle') || contains(needs.get-changed-files.outputs.changed_files, 'settings.gradle')
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -495,7 +496,7 @@ jobs:
           docker buildx build \
             --cache-from type=local,src=/tmp/.buildx-cache \
             --cache-to type=local,dest=/tmp/.buildx-cache \
-            -t $AWS_REGISTRY/repo-ticketable:prod-gateway-$SHORT_SHA \
+            -t $AWS_REGISTRY/repo-ticketable:gateway-$SHORT_SHA \
             --push -f module-gateway/Dockerfile .
 
       - name: Deploy to EC2
@@ -525,20 +526,20 @@ jobs:
 
             # 기존 컨테이너 제거 및 새 이미지 배포
             sudo docker rm -f module-gateway || true
-            sudo docker pull ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-gateway-$SHORT_SHA
+            sudo docker pull ${{ secrets.AWS_REGISTRY }}/repo-ticketable:gateway-$SHORT_SHA
             sudo docker run -d --name module-gateway --network host -p 8080:8080 \
-              -e SPRING_PROFILES_ACTIVE=prod \
               -e eureka.client.serviceUrl.defaultZone=${{ secrets.EUREKA_URL }} \
               -e REDIS_HOST=${{ secrets.REDIS_HOST }} \
               -e REDIS_PORT=${{ secrets.REDIS_PORT }} \
               -e REDIS_USER=${{ secrets.REDIS_USER }} \
               -e REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }} \
-              ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-gateway-$SHORT_SHA
+              ${{ secrets.AWS_REGISTRY }}/repo-ticketable:gateway-$SHORT_SHA
 
 
   deploy-point:
     runs-on: ubuntu-latest
-    if: contains(github.event.push.changed_files, 'module-point/') || contains(github.event.push.changed_files, 'build.gradle') || contains(github.event.push.changed_files, 'settings.gradle')
+    needs: [get-changed-files]
+    if: contains(needs.get-changed-files.outputs.changed_files, 'module-point/') || contains(needs.get-changed-files.outputs.changed_files, 'build.gradle') || contains(needs.get-changed-files.outputs.changed_files, 'settings.gradle')
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -590,7 +591,7 @@ jobs:
           docker buildx build \
             --cache-from type=local,src=/tmp/.buildx-cache \
             --cache-to type=local,dest=/tmp/.buildx-cache \
-            -t $AWS_REGISTRY/repo-ticketable:prod-point-$SHORT_SHA \
+            -t $AWS_REGISTRY/repo-ticketable:point-$SHORT_SHA \
             --push -f module-point/Dockerfile .
 
       - name: Deploy to EC2
@@ -620,9 +621,8 @@ jobs:
 
             # 기존 컨테이너 제거 및 새 이미지 배포
             sudo docker rm -f module-point || true
-            sudo docker pull ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-point-$SHORT_SHA
+            sudo docker pull ${{ secrets.AWS_REGISTRY }}/repo-ticketable:point-$SHORT_SHA
             sudo docker run -d --name module-point --network host -p 8086:8086 \
-              -e SPRING_PROFILES_ACTIVE=prod \
               -e eureka.client.serviceUrl.defaultZone=${{ secrets.EUREKA_URL }} \
               -e DB_URL=${{ secrets.DB_URL }} \
               -e DB_USERNAME=${{ secrets.DB_USERNAME }} \
@@ -633,12 +633,13 @@ jobs:
               -e REDIS_PORT=${{ secrets.REDIS_PORT }} \
               -e REDIS_USER=${{ secrets.REDIS_USER }} \
               -e REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }} \
-              ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-point-$SHORT_SHA
+              ${{ secrets.AWS_REGISTRY }}/repo-ticketable:point-$SHORT_SHA
 
 
   deploy-ticket:
     runs-on: ubuntu-latest
-    if: contains(github.event.push.changed_files, 'module-ticket/') || contains(github.event.push.changed_files, 'build.gradle') || contains(github.event.push.changed_files, 'settings.gradle')
+    needs: [get-changed-files]
+    if: contains(needs.get-changed-files.outputs.changed_files, 'module-ticket/') || contains(needs.get-changed-files.outputs.changed_files, 'build.gradle') || contains(needs.get-changed-files.outputs.changed_files, 'settings.gradle')
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -690,7 +691,7 @@ jobs:
           docker buildx build \
             --cache-from type=local,src=/tmp/.buildx-cache \
             --cache-to type=local,dest=/tmp/.buildx-cache \
-            -t $AWS_REGISTRY/repo-ticketable:prod-ticket-$SHORT_SHA \
+            -t $AWS_REGISTRY/repo-ticketable:ticket-$SHORT_SHA \
             --push -f module-ticket/Dockerfile .
 
       - name: Deploy to EC2
@@ -720,9 +721,8 @@ jobs:
 
             # 기존 컨테이너 제거 및 새 이미지 배포
             sudo docker rm -f module-ticket || true
-            sudo docker pull ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-ticket-$SHORT_SHA
+            sudo docker pull ${{ secrets.AWS_REGISTRY }}/repo-ticketable:ticket-$SHORT_SHA
             sudo docker run -d --name module-ticket --network host -p 8082:8082 \
-              -e SPRING_PROFILES_ACTIVE=prod \
               -e eureka.client.serviceUrl.defaultZone=${{ secrets.EUREKA_URL }} \
               -e DB_URL=${{ secrets.DB_URL }} \
               -e DB_USERNAME=${{ secrets.DB_USERNAME }} \
@@ -739,12 +739,13 @@ jobs:
               -e REDIS_PORT=${{ secrets.REDIS_PORT }} \
               -e REDIS_USER=${{ secrets.REDIS_USER }} \
               -e REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }} \
-              ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-ticket-$SHORT_SHA
+              ${{ secrets.AWS_REGISTRY }}/repo-ticketable:ticket-$SHORT_SHA
 
 
   deploy-waiting:
     runs-on: ubuntu-latest
-    if: contains(github.event.push.changed_files, 'module-waiting/') || contains(github.event.push.changed_files, 'build.gradle') || contains(github.event.push.changed_files, 'settings.gradle')
+    needs: [get-changed-files]
+    if: contains(needs.get-changed-files.outputs.changed_files, 'module-waiting/') || contains(needs.get-changed-files.outputs.changed_files, 'build.gradle') || contains(needs.get-changed-files.outputs.changed_files, 'settings.gradle')
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -796,7 +797,7 @@ jobs:
           docker buildx build \
             --cache-from type=local,src=/tmp/.buildx-cache \
             --cache-to type=local,dest=/tmp/.buildx-cache \
-            -t $AWS_REGISTRY/repo-ticketable:prod-waiting-$SHORT_SHA \
+            -t $AWS_REGISTRY/repo-ticketable:waiting-$SHORT_SHA \
             --push -f module-waiting/Dockerfile .
 
       - name: Deploy to EC2
@@ -826,12 +827,11 @@ jobs:
 
             # 기존 컨테이너 제거 및 새 이미지 배포
             sudo docker rm -f module-waiting || true
-            sudo docker pull ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-waiting-$SHORT_SHA
+            sudo docker pull ${{ secrets.AWS_REGISTRY }}/repo-ticketable:waiting-$SHORT_SHA
             sudo docker run -d --name module-waiting --network host -p 8085:8085 \
-              -e SPRING_PROFILES_ACTIVE=prod \
               -e eureka.client.serviceUrl.defaultZone=${{ secrets.EUREKA_URL }} \
               -e REDIS_HOST=${{ secrets.REDIS_HOST }} \
               -e REDIS_PORT=${{ secrets.REDIS_PORT }} \
               -e REDIS_USER=${{ secrets.REDIS_USER }} \
               -e REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }} \
-              ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-waiting-$SHORT_SHA
+              ${{ secrets.AWS_REGISTRY }}/repo-ticketable:waiting-$SHORT_SHA
