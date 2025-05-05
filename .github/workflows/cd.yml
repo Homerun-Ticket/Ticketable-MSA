@@ -108,9 +108,6 @@ jobs:
             fi
             
             newgrp docker || true
-            
-            # ECR 로그인
-            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | sudo docker login --username AWS --password-stdin ${{ secrets.AWS_REGISTRY }}
 
             # 기존 컨테이너 제거 및 새 이미지 배포
             sudo docker rm -f module-eureka || true
@@ -187,6 +184,8 @@ jobs:
           script: |
             echo "✅ SSH 접속 완료"
             
+            SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-8)
+            
             # Docker 설치
             if ! command -v docker &> /dev/null; then
               sudo yum update -y
@@ -195,11 +194,13 @@ jobs:
               sudo systemctl enable docker
               sudo usermod -aG docker $USER
             fi
+            
+            newgrp docker || true
 
             # 기존 컨테이너 제거 및 새 이미지 배포
-            docker rm -f module-auth || true
-            docker pull ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-auth-$SHORT_SHA
-            docker run -d --name module-auth --network host -p 8083:8083 \
+            sudo docker rm -f module-auth || true
+            sudo docker pull ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-auth-$SHORT_SHA
+            sudo docker run -d --name module-auth --network host -p 8083:8083 \
               -e SPRING_PROFILES_ACTIVE=prod \
               -e eureka.client.serviceUrl.defaultZone=${{ secrets.EUREKA_URL }} \
               -e DB_URL=${{ secrets.DB_URL }} \
@@ -285,6 +286,8 @@ jobs:
           script: |
             echo "✅ SSH 접속 완료"
             
+            SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-8)
+            
             # Docker 설치
             if ! command -v docker &> /dev/null; then
               sudo yum update -y
@@ -293,11 +296,13 @@ jobs:
               sudo systemctl enable docker
               sudo usermod -aG docker $USER
             fi
+            
+            newgrp docker || true
 
             # 기존 컨테이너 제거 및 새 이미지 배포
-            docker rm -f module-auction || true
-            docker pull ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-auction-$SHORT_SHA
-            docker run -d --name module-auction --network host -p 8084:8084 \
+            sudo docker rm -f module-auction || true
+            sudo docker pull ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-auction-$SHORT_SHA
+            sudo docker run -d --name module-auction --network host -p 8084:8084 \
               -e SPRING_PROFILES_ACTIVE=prod \
               -e eureka.client.serviceUrl.defaultZone=${{ secrets.EUREKA_URL }} \
               -e DB_URL=${{ secrets.DB_URL }} \
@@ -385,6 +390,8 @@ jobs:
           script: |
             echo "✅ SSH 접속 완료"
             
+            SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-8)
+            
             # Docker 설치
             if ! command -v docker &> /dev/null; then
               sudo yum update -y
@@ -393,11 +400,13 @@ jobs:
               sudo systemctl enable docker
               sudo usermod -aG docker $USER
             fi
+            
+            newgrp docker || true
 
             # 기존 컨테이너 제거 및 새 이미지 배포
-            docker rm -f module-game || true
-            docker pull ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-game-$SHORT_SHA
-            docker run -d --name module-game --network host -p 8081:8081 \
+            sudo docker rm -f module-game || true
+            sudo docker pull ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-game-$SHORT_SHA
+            sudo docker run -d --name module-game --network host -p 8081:8081 \
               -e SPRING_PROFILES_ACTIVE=prod \
               -e eureka.client.serviceUrl.defaultZone=${{ secrets.EUREKA_URL }} \
               -e DB_URL=${{ secrets.DB_URL }} \
@@ -485,6 +494,8 @@ jobs:
           script: |
             echo "✅ SSH 접속 완료"
             
+            SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-8)
+            
             # Docker 설치
             if ! command -v docker &> /dev/null; then
               sudo yum update -y
@@ -493,11 +504,13 @@ jobs:
               sudo systemctl enable docker
               sudo usermod -aG docker $USER
             fi
+            
+            newgrp docker || true
 
             # 기존 컨테이너 제거 및 새 이미지 배포
-            docker rm -f module-gateway || true
-            docker pull ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-gateway-$SHORT_SHA
-            docker run -d --name module-gateway --network host -p 8080:8080 \
+            sudo docker rm -f module-gateway || true
+            sudo docker pull ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-gateway-$SHORT_SHA
+            sudo docker run -d --name module-gateway --network host -p 8080:8080 \
               -e SPRING_PROFILES_ACTIVE=prod \
               -e eureka.client.serviceUrl.defaultZone=${{ secrets.EUREKA_URL }} \
               -e REDIS_HOST=${{ secrets.REDIS_HOST }} \
@@ -574,6 +587,8 @@ jobs:
           script: |
             echo "✅ SSH 접속 완료"
             
+            SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-8)
+            
             # Docker 설치
             if ! command -v docker &> /dev/null; then
               sudo yum update -y
@@ -582,11 +597,13 @@ jobs:
               sudo systemctl enable docker
               sudo usermod -aG docker $USER
             fi
+            
+            newgrp docker || true
 
             # 기존 컨테이너 제거 및 새 이미지 배포
-            docker rm -f module-point || true
-            docker pull ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-point-$SHORT_SHA
-            docker run -d --name module-point --network host -p 8086:8086 \
+            sudo docker rm -f module-point || true
+            sudo docker pull ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-point-$SHORT_SHA
+            sudo docker run -d --name module-point --network host -p 8086:8086 \
               -e SPRING_PROFILES_ACTIVE=prod \
               -e eureka.client.serviceUrl.defaultZone=${{ secrets.EUREKA_URL }} \
               -e DB_URL=${{ secrets.DB_URL }} \
@@ -668,6 +685,8 @@ jobs:
           script: |
             echo "✅ SSH 접속 완료"
             
+            SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-8)
+            
             # Docker 설치
             if ! command -v docker &> /dev/null; then
               sudo yum update -y
@@ -676,11 +695,13 @@ jobs:
               sudo systemctl enable docker
               sudo usermod -aG docker $USER
             fi
+            
+            newgrp docker || true
 
             # 기존 컨테이너 제거 및 새 이미지 배포
-            docker rm -f module-ticket || true
-            docker pull ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-ticket-$SHORT_SHA
-            docker run -d --name module-ticket --network host -p 8082:8082 \
+            sudo docker rm -f module-ticket || true
+            sudo docker pull ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-ticket-$SHORT_SHA
+            sudo docker run -d --name module-ticket --network host -p 8082:8082 \
               -e SPRING_PROFILES_ACTIVE=prod \
               -e eureka.client.serviceUrl.defaultZone=${{ secrets.EUREKA_URL }} \
               -e DB_URL=${{ secrets.DB_URL }} \
@@ -768,6 +789,8 @@ jobs:
           script: |
             echo "✅ SSH 접속 완료"
             
+            SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-8)
+            
             # Docker 설치
             if ! command -v docker &> /dev/null; then
               sudo yum update -y
@@ -776,11 +799,13 @@ jobs:
               sudo systemctl enable docker
               sudo usermod -aG docker $USER
             fi
+            
+            newgrp docker || true
 
             # 기존 컨테이너 제거 및 새 이미지 배포
-            docker rm -f module-waiting || true
-            docker pull ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-waiting-$SHORT_SHA
-            docker run -d --name module-waiting --network host -p 8085:8085 \
+            sudo docker rm -f module-waiting || true
+            sudo docker pull ${{ secrets.AWS_REGISTRY }}/repo-ticketable:prod-waiting-$SHORT_SHA
+            sudo docker run -d --name module-waiting --network host -p 8085:8085 \
               -e SPRING_PROFILES_ACTIVE=prod \
               -e eureka.client.serviceUrl.defaultZone=${{ secrets.EUREKA_URL }} \
               -e REDIS_HOST=${{ secrets.REDIS_HOST }} \
