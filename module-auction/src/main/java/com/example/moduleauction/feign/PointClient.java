@@ -11,13 +11,13 @@ import com.example.moduleauction.feign.dto.request.PointPaymentRequestDto;
 @FeignClient(name = "module-point")
 public interface PointClient {
 
-	@PostMapping("/internal/members/{memberId}/points/decrement")
+	@PostMapping("/api/internal/members/{memberId}/points/decrement")
 	PaymentDto processPayment(
 		@PathVariable Long memberId,
 		@RequestBody PointPaymentRequestDto pointPaymentRequestDto
 	);
 
-	@PostMapping("/internal/members/{memberId}/points/increment")
+	@PostMapping("/api/internal/members/{memberId}/points/increment")
 	PaymentDto processRefund(
 		@PathVariable Long memberId,
 		@RequestBody PointPaymentRequestDto pointPaymentRequestDto

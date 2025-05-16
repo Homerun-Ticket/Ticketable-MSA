@@ -44,10 +44,11 @@ public class ReservationValidator {
 		}
 	}
 
-	public void checkDuplicateReservation(List<Long> seatIds) {
-		if(reservationRepository.existsByReserveSeats_SeatIdInAndState(
+	public void checkDuplicateReservation(List<Long> seatIds, Long gameId) {
+		if(reservationRepository.existsByReserveSeats_SeatIdInAndStateAndGameId(
 			seatIds,
-			"WAITING_PAYMENT")
+			"WAITING_PAYMENT",
+			gameId)
 		) {
 			throw new ServerException(TICKET_ALREADY_RESERVED);
 		}

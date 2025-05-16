@@ -63,7 +63,8 @@ public class TicketTransferStreamConsumer {
 					}
 				}
 			} catch (Exception e) {
-				if (e.getMessage().contains("NOGROUP")) {
+				String rootMessage = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
+				if (rootMessage.contains("NOGROUP")) {
 					redisTemplate.opsForStream().createGroup(STREAM_KEY, ReadOffset.from("0"), GROUP_NAME);
 				} else {
 					throw e;

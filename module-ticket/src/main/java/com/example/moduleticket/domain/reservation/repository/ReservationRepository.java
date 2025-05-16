@@ -40,5 +40,5 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 	)
 	List<Reservation> findExpiredReservations(LocalDateTime expiredLimit);
 
-	boolean existsByReserveSeats_SeatIdInAndState(List<Long> reserveSeatIds, String state);
+	boolean existsByReserveSeats_SeatIdInAndStateAndGameId(List<Long> reserveSeatIds, String state, Long gameId);
 }

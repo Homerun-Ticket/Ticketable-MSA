@@ -27,7 +27,7 @@ public class ReservationCreateService {
 	public ReservationResponse createReservation(AuthUser auth, ReservationCreateRequest reservationCreateRequest) {
 
 		reservationValidator.checkTicketSeatDuplicate(reservationCreateRequest.getGameId(), reservationCreateRequest.getSeatIds());
-		reservationValidator.checkDuplicateReservation(reservationCreateRequest.getSeatIds());
+		reservationValidator.checkDuplicateReservation(reservationCreateRequest.getSeatIds(),reservationCreateRequest.getGameId() );
 
 		List<SeatDetailDto> seatDetailDtos = gameClient.getSeatsByGameAndSection(
 			reservationCreateRequest.getGameId(),

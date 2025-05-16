@@ -48,6 +48,8 @@ dependencies {
     testImplementation 'com.h2database:h2' // H2 테스트 전용으로 변경
 
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation("io.micrometer:micrometer-registry-prometheus")
 }
 
 tasks.named('test') {

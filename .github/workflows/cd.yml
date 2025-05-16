@@ -441,6 +441,8 @@ jobs:
               -e REDIS_PORT=${{ secrets.REDIS_PORT }} \
               -e REDIS_USER=${{ secrets.REDIS_USER }} \
               -e REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }} \
+              -e GRPC_PORT=${{ secrets.GRPC_PORT }} \
+              -e GRPC_HOST=${{ secrets.GRPC_HOST }} \
               ${{ secrets.AWS_REGISTRY }}/repo-ticketable:game-$SHORT_SHA
 
 
