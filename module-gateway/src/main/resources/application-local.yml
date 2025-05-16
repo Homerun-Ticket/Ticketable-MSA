@@ -8,7 +8,15 @@ spring:
             - Path=/api/v*/games/**, /api/v*/seats/**, /api/v*/sections/**, /api/v*/stadiums/**
           filters:
             - name: ValidateToken
-            - RewritePath=/module-game/(?<segment>.*), /${segment}
+            - name: RequestRateLimiter
+              args:
+                keyResolver: "#{@ipKeyResolver}"
+                redis-rate-limiter.replenishRate: 2
+                redis-rate-limiter.burstCapacity: 100
+            - name: RewritePath
+              args:
+                regexp: "/module-game/(?<segment>.*)"
+                replacement: /${segment}
 
 
         - id: module-ticket
@@ -17,7 +25,15 @@ spring:
             - Path=/api/v*/tickets/**, /api/v*/reservations/**, /api/v*/waiting-queue/**
           filters:
             - name: ValidateToken
-            - RewritePath=/module-ticket/(?<segment>.*), /${segment}
+            - name: RequestRateLimiter
+              args:
+                keyResolver: "#{@ipKeyResolver}"
+                redis-rate-limiter.replenishRate: 2
+                redis-rate-limiter.burstCapacity: 100
+            - name: RewritePath
+              args:
+                regexp: "/module-ticket/(?<segment>.*)"
+                replacement: "/${segment}"
 
 
         - id: auth-login
@@ -29,7 +45,7 @@ spring:
               args:
                 keyResolver: "#{@ipKeyResolver}"
                 redis-rate-limiter.replenishRate: 1   # 초당 최대 1 토큰 생성
-                redis-rate-limiter.burstCapacity: 2   # 2 토큰시 버스트
+                redis-rate-limiter.burstCapacity: 10   # 2 토큰시 버스트
 
 
         - id: auth-signup
@@ -44,7 +60,15 @@ spring:
             - Path=/api/v*/members/**
           filters:
             - name: ValidateToken
-            - RewritePath=/module-auth/(?<segment>.*), /${segment}
+            - name: RequestRateLimiter
+              args:
+                keyResolver: "#{@ipKeyResolver}"
+                redis-rate-limiter.replenishRate: 2
+                redis-rate-limiter.burstCapacity: 100
+            - name: RewritePath
+              args:
+                regexp: "/module-auth/(?<segment>.*)"
+                replacement: "/${segment}"
 
 
         - id: module-auction
@@ -53,7 +77,15 @@ spring:
             - Path=/api/v*/auctions/**
           filters:
             - name: ValidateToken
-            - RewritePath=/module-auction/(?<segment>.*), /${segment}
+            - name: RequestRateLimiter
+              args:
+                keyResolver: "#{@ipKeyResolver}"
+                redis-rate-limiter.replenishRate: 2
+                redis-rate-limiter.burstCapacity: 100
+            - name: RewritePath
+              args:
+                regexp: "/module-auction/(?<segment>.*)"
+                replacement: "/${segment}"
 
 
         - id: module-point
@@ -62,7 +94,15 @@ spring:
             - Path=/api/v*/points/**, /api/v*/pointHistories/**, /api/v*/payments/**
           filters:
             - name: ValidateToken
-            - RewritePath=/module-point/(?<segment>.*), /${segment}
+            - name: RequestRateLimiter
+              args:
+                keyResolver: "#{@ipKeyResolver}"
+                redis-rate-limiter.replenishRate: 2
+                redis-rate-limiter.burstCapacity: 100
+            - name: RewritePath
+              args:
+                regexp: "/module-point/(?<segment>.*)"
+                replacement: "/${segment}"
 
 
         - id: admin-game

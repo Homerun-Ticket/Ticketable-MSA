@@ -2,6 +2,7 @@ package com.example.moduleauth.domain.member.controller;
 
 import com.example.moduleauth.domain.member.dto.request.DeleteMemberRequest;
 import com.example.moduleauth.domain.member.dto.request.UpdatePasswordRequest;
+import com.example.moduleauth.domain.member.dto.request.UpdatePasswordV2Request;
 import com.example.moduleauth.domain.member.service.MemberService;
 import com.example.moduleauth.global.annotation.LoginUser;
 import com.example.moduleauth.global.entity.AuthUser;
@@ -18,11 +19,20 @@ public class MemberController {
 	private final MemberService memberService;
 	
 	@PatchMapping("/v1/members")
-	public ResponseEntity<String> updatePassword(
+	public ResponseEntity<String> updatePasswordV1(
 		@LoginUser AuthUser authUser,
 		@Valid @RequestBody UpdatePasswordRequest request
 	) {
-		memberService.updatePassword(authUser.getMemberId(), request);
+		memberService.updatePasswordV1(authUser.getMemberId(), request);
+		return ResponseEntity.ok("비밀번호가 변경되었습니다.");
+	}
+	
+	@PatchMapping("/v2/members")
+	public ResponseEntity<String> updatePasswordV2(
+		@LoginUser AuthUser authUser,
+		@Valid @RequestBody UpdatePasswordV2Request request
+	) {
+		memberService.updatePasswordV2(authUser.getMemberId(), request);
 		return ResponseEntity.ok("비밀번호가 변경되었습니다.");
 	}
 	

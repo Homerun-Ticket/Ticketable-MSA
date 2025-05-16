@@ -1,7 +1,9 @@
 package com.example.moduleauth.domain.member.service;
 
+import com.example.moduleauth.domain.auth.service.ReCaptchaService;
 import com.example.moduleauth.domain.member.dto.request.DeleteMemberRequest;
 import com.example.moduleauth.domain.member.dto.request.UpdatePasswordRequest;
+import com.example.moduleauth.domain.member.dto.request.UpdatePasswordV2Request;
 import com.example.moduleauth.domain.member.entity.Member;
 import com.example.moduleauth.domain.member.repository.MemberRepository;
 import com.example.moduleauth.global.exception.ServerException;
@@ -18,9 +20,26 @@ public class MemberService {
 	
 	private final MemberRepository memberRepository;
 	private final PasswordEncoder passwordEncoder;
+	private final ReCaptchaService reCaptchaService;
 	
 	@Transactional
-	public void updatePassword(Long memberId, UpdatePasswordRequest request) {
+	public void updatePasswordV1(Long memberId, UpdatePasswordRequest request) {
+		if (request.getOldPassword().equals(request.getNewPassword())) {
+			throw new ServerException(PASSWORD_SAME_AS_OLD);
+		}
+		
+		Member member = getMember(memberId);
+		matchPassword(request.getOldPassword(), member.getPassword());
+		
+		member.changePassword(passwordEncoder.encode(request.getNewPassword()));
+	}
+	
+	@Transactional
+	public void updatePasswordV2(Long memberId, UpdatePasswordV2Request request) {
+		if(!reCaptchaService.isValid(request.getRecaptchaToken())) {
+			throw new ServerException(INVALID_RECAPTCHA_TOKEN);
+		}
+		
 		if (request.getOldPassword().equals(request.getNewPassword())) {
 			throw new ServerException(PASSWORD_SAME_AS_OLD);
 		}
